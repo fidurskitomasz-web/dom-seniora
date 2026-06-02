@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dom Seniora — Panel zarządzania</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" rel="stylesheet">
+<style>
+:root {
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --ds-navy: #0F2A44; --ds-navy-deep: #0A1E33; --ds-navy-soft: #1B3A5A;
+  --ds-bottle: #1F4D3D; --ds-bottle-soft: #2C6952;
+  --ds-cream: #F7F4ED; --ds-paper: #FBFAF6;
+  --ds-line: #E4DFD3; --ds-line-soft: #EFEAE0;
+  --ds-ink: #1C1C1A; --ds-ink-soft: #5A5A55; --ds-ink-muted: #8A8A82;
+  --ds-gold: #B08A4B; --ds-gold-dark: #8F6E36;
+  --ds-danger: #8B2A2A; --ds-warn: #B26A1A;
+  --br-sm: 4px; --br-md: 6px; --br-lg: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; min-height: 100%; }
+body {
+  font-family: var(--font-sans); color: var(--ds-ink);
+  background: linear-gradient(135deg, #E8E2D2 0%, #D5CDB8 100%);
+  overflow-x: hidden;
+}
+.serif { font-family: var(--font-serif); letter-spacing: -0.01em; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+
+/* LOGIN */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; position: relative; }
+.login-card { width: 100%; max-width: 420px; background: var(--ds-paper); border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); padding: 2.5rem 2.25rem; box-shadow: 0 30px 80px rgba(15,42,68,0.18); position: relative; }
+.login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--ds-navy), var(--ds-gold), var(--ds-navy)); border-radius: var(--br-lg) var(--br-lg) 0 0; }
+.login-crest { width: 64px; height: 64px; margin: 0 auto 1.25rem; background: var(--ds-navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ds-gold); position: relative; }
+.login-crest::after { content: ''; position: absolute; inset: -5px; border: 1px solid var(--ds-gold); border-radius: 50%; opacity: 0.4; }
+.login-eyebrow { text-align: center; font-size: 11px; letter-spacing: 0.2em; color: var(--ds-ink-muted); text-transform: uppercase; font-weight: 500; }
+.login-title { text-align: center; font-size: 28px; font-weight: 500; margin-top: 4px; }
+.login-sub { text-align: center; font-size: 13px; color: var(--ds-ink-soft); margin-top: 6px; }
+.login-divider { display: flex; align-items: center; gap: 10px; margin: 1.5rem 0 1.25rem; color: var(--ds-ink-muted); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; }
+.login-divider::before, .login-divider::after { content: ''; flex: 1; height: 0.5px; background: var(--ds-line); }
+.label { display: block; font-size: 11px; color: var(--ds-ink-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; font-weight: 500; }
+.input, .select, .textarea { width: 100%; padding: 11px 14px; background: var(--ds-paper); border: 0.5px solid var(--ds-line); border-radius: var(--br-md); font-size: 14px; color: var(--ds-ink); transition: all 0.15s; }
+.input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--ds-navy); background: #fff; box-shadow: 0 0 0 3px rgba(15,42,68,0.08); }
+.textarea { resize: vertical; min-height: 80px; }
+.select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238A8A82' stroke-width='1.2' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+.error-msg { font-size: 12px; color: var(--ds-danger); margin: 8px 0 0; min-height: 16px; }
+
+.btn-primary { padding: 11px 18px; background: var(--ds-navy); color: #fff; border: 0.5px solid var(--ds-navy); border-radius: var(--br-md); font-size: 14px; font-weight: 500; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary:hover { background: var(--ds-navy-deep); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-ghost { padding: 9px 14px; background: transparent; border: 0.5px solid var(--ds-line); border-radius: var(--br-md); font-size: 13px; color: var(--ds-ink); transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-ghost:hover { border-color: var(--ds-navy); background: var(--ds-paper); }
+.btn-accent { padding: 9px 14px; background: var(--ds-bottle); color: #fff; border: 0.5px solid var(--ds-bottle); border-radius: var(--br-md); font-size: 13px; font-weight: 500; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-accent:hover { background: var(--ds-bottle-soft); }
+.btn-danger { padding: 9px 14px; background: transparent; border: 0.5px solid rgba(139,42,42,0.3); color: var(--ds-danger); border-radius: var(--br-md); font-size: 13px; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-danger:hover { background: rgba(139,42,42,0.06); border-color: var(--ds-danger); }
+
+/* APP */
+.app { background: var(--ds-paper); min-height: 100vh; position: relative; overflow: hidden; }
+.header { background: var(--ds-navy); color: #fff; padding: 1.25rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 3px solid var(--ds-gold); position: sticky; top: 0; z-index: 50; }
+.header-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.header-crest { width: 40px; height: 40px; flex-shrink: 0; background: rgba(176,138,75,0.15); border: 0.5px solid var(--ds-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ds-gold); }
+.header-title { font-size: 19px; font-weight: 500; line-height: 1.2; }
+.header-sub { font-size: 11px; color: rgba(255,255,255,0.65); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+.header-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+.header-btn { background: rgba(176,138,75,0.18); border: 0.5px solid var(--ds-gold); color: #fff; padding: 8px 14px; border-radius: var(--br-md); font-size: 12px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; transition: all 0.15s; }
+.header-btn:hover { background: rgba(176,138,75,0.32); }
+.header-logout { background: transparent; border: 0.5px solid rgba(255,255,255,0.25); color: #fff; padding: 8px 14px; border-radius: var(--br-md); font-size: 12px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
+.header-logout:hover { border-color: var(--ds-gold); color: var(--ds-gold); }
+
+.tabs { background: #fff; display: flex; gap: 0; border-bottom: 0.5px solid var(--ds-line); padding: 0 1.5rem; overflow-x: auto; position: sticky; top: 73px; z-index: 40; }
+.tab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 14px 16px; font-size: 13px; color: var(--ds-ink-muted); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
+.tab:hover { color: var(--ds-ink); }
+.tab.active { color: var(--ds-navy); font-weight: 500; border-bottom-color: var(--ds-gold); }
+
+.content { padding: 1.5rem 1.75rem 3rem; max-width: 1400px; margin: 0 auto; }
+.toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.toolbar .input { flex: 1; min-width: 180px; }
+.empty { text-align: center; padding: 4rem 1rem; color: var(--ds-ink-muted); }
+.empty i { font-size: 36px; color: var(--ds-line); display: block; margin-bottom: 10px; }
+.info-banner { background: rgba(176,138,75,0.10); border: 0.5px solid var(--ds-gold); border-radius: var(--br-md); padding: 12px 16px; font-size: 12px; color: var(--ds-ink-soft); margin-bottom: 1.25rem; display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
+.info-banner i { color: var(--ds-gold); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.info-banner strong { color: var(--ds-ink); }
+
+.summary-bar { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); padding: 18px 22px; margin-bottom: 1.25rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 22px; }
+.summary-item { display: flex; flex-direction: column; gap: 4px; }
+.summary-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ds-ink-muted); font-weight: 500; }
+.summary-value { font-family: var(--font-serif); font-size: 26px; font-weight: 500; color: var(--ds-navy); line-height: 1; }
+.summary-value.bottle { color: var(--ds-bottle); }
+.summary-value.warn { color: var(--ds-warn); }
+.summary-value.danger { color: var(--ds-danger); }
+.summary-value small { font-family: var(--font-sans); font-size: 12px; color: var(--ds-ink-muted); font-weight: 400; margin-left: 4px; }
+
+.avatar { width: 44px; height: 44px; flex-shrink: 0; background: var(--ds-navy); color: var(--ds-cream); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 15px; font-weight: 500; }
+.avatar-sm { width: 32px; height: 32px; flex-shrink: 0; background: var(--ds-navy); color: var(--ds-cream); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 12px; font-weight: 500; }
+
+.resident-block { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); margin-bottom: 16px; overflow: hidden; }
+.resident-head { padding: 12px 16px; background: var(--ds-cream); border-bottom: 0.5px solid var(--ds-line); display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.resident-head:hover { background: #F1ECDE; }
+.resident-head-main { flex: 1; min-width: 0; }
+.resident-head-name { font-size: 14px; font-weight: 500; font-family: var(--font-serif); }
+.resident-head-meta { font-size: 11px; color: var(--ds-ink-muted); margin-top: 2px; }
+.resident-head-alert { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.alert-red { background: rgba(139,42,42,0.12); color: var(--ds-danger); }
+.alert-amber { background: rgba(178,106,26,0.15); color: var(--ds-warn); }
+.alert-green { background: rgba(31,77,61,0.10); color: var(--ds-bottle); }
+.alert-fresh { background: rgba(31,77,61,0.10); color: var(--ds-bottle); animation: pulse 2s ease-in-out 3; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.chev { color: var(--ds-ink-muted); transition: transform 0.2s; }
+
+.tab-wrap { padding: 0; overflow-x: auto; }
+.tab-tbl { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
+.tab-tbl th { background: #fff; padding: 9px 12px; text-align: left; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ds-ink-muted); font-weight: 500; border-bottom: 0.5px solid var(--ds-line); white-space: nowrap; }
+.tab-tbl td { padding: 10px 12px; border-bottom: 0.5px solid var(--ds-line-soft); vertical-align: middle; }
+.tab-tbl tr:last-child td { border-bottom: 0; }
+.tab-tbl tr:hover td { background: var(--ds-paper); }
+.tab-tbl input, .tab-tbl select { width: 100%; padding: 6px 8px; background: transparent; border: 0.5px solid transparent; border-radius: 4px; font-size: 13px; color: var(--ds-ink); }
+.tab-tbl input:hover, .tab-tbl select:hover { border-color: var(--ds-line); background: var(--ds-paper); }
+.tab-tbl input:focus, .tab-tbl select:focus { outline: none; border-color: var(--ds-navy); background: #fff; box-shadow: 0 0 0 2px rgba(15,42,68,0.08); }
+.cell-calc { text-align: right; font-variant-numeric: tabular-nums; padding-right: 16px; font-weight: 500; }
+.cell-date { font-variant-numeric: tabular-nums; font-weight: 500; }
+.cell-date.red { color: var(--ds-danger); font-weight: 700; }
+.cell-date.amber { color: var(--ds-warn); font-weight: 600; }
+.cell-date.green { color: var(--ds-bottle); }
+.stock-edit { width: 88px; padding: 8px 10px; background: var(--ds-cream); border: 0.5px solid var(--ds-line); border-radius: var(--br-md); font-family: var(--font-serif); font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ds-navy); display: inline-block; }
+.stock-edit:focus { outline: none; border-color: var(--ds-navy); background: #fff; box-shadow: 0 0 0 2px rgba(15,42,68,0.08); }
+.stock-edit.red { color: var(--ds-danger); border-color: rgba(139,42,42,0.3); background: rgba(139,42,42,0.03); }
+.stock-edit.amber { color: var(--ds-warn); border-color: rgba(178,106,26,0.3); background: rgba(178,106,26,0.03); }
+.stock-edit.fresh { border-color: var(--ds-bottle); background: rgba(31,77,61,0.06); }
+.stock-meta { font-size: 10px; color: var(--ds-ink-muted); text-align: right; padding-right: 6px; margin-top: 4px; line-height: 1.3; }
+.stock-meta.fresh { color: var(--ds-bottle); font-weight: 600; }
+.stock-meta strong { color: var(--ds-ink-soft); font-weight: 600; }
+.tab-add-row { padding: 10px 14px; background: #fff; border-top: 0.5px solid var(--ds-line-soft); }
+.rm-btn { width: 28px; height: 28px; background: transparent; border: 0.5px solid transparent; border-radius: 4px; color: var(--ds-ink-muted); display: inline-flex; align-items: center; justify-content: center; }
+.rm-btn:hover { color: var(--ds-danger); border-color: var(--ds-danger); }
+.rm-btn.disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
+
+/* MODAL */
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,42,68,0.55); backdrop-filter: blur(3px); z-index: 200; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem; overflow-y: auto; }
+.modal-bg.show { display: flex; }
+.modal { background: var(--ds-paper); border-radius: var(--br-lg); border: 0.5px solid var(--ds-line); width: 100%; max-width: 640px; overflow: hidden; box-shadow: 0 30px 80px rgba(15,42,68,0.4); }
+.modal-wide { max-width: 800px; }
+.modal-header { background: var(--ds-navy); color: #fff; padding: 1.25rem 1.5rem; position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.modal-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--ds-gold); }
+.modal-icon { width: 40px; height: 40px; background: rgba(176,138,75,0.18); border: 0.5px solid var(--ds-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ds-gold); flex-shrink: 0; }
+.modal-title { font-family: var(--font-serif); font-size: 19px; font-weight: 500; }
+.modal-sub { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 3px; }
+.modal-close { background: transparent; border: 0.5px solid rgba(255,255,255,0.3); color: #fff; width: 32px; height: 32px; border-radius: var(--br-md); display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: rgba(255,255,255,0.08); }
+.modal-body { padding: 1.25rem 1.5rem; max-height: 70vh; overflow-y: auto; }
+.modal-footer { padding: 1rem 1.5rem; background: #fff; border-top: 0.5px solid var(--ds-line); display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.field { margin-bottom: 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+/* MIESZKANCY */
+.resident-card { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); padding: 1rem 1.25rem; margin-bottom: 10px; cursor: pointer; transition: all 0.15s; }
+.resident-card:hover { border-color: var(--ds-navy-soft); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15,42,68,0.06); }
+.resident-card-row { display: flex; align-items: center; gap: 14px; }
+.resident-card-main { flex: 1; min-width: 0; }
+.resident-card-name { font-size: 15px; font-weight: 500; font-family: var(--font-serif); }
+.resident-card-meta { font-size: 12px; color: var(--ds-ink-muted); margin-top: 3px; }
+.resident-card-meta .dot { margin: 0 6px; opacity: 0.5; }
+.status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.status-active { background: rgba(31,77,61,0.10); color: var(--ds-bottle); }
+.status-discharged { background: rgba(138,138,130,0.15); color: var(--ds-ink-soft); }
+.status-deceased { background: rgba(139,42,42,0.10); color: var(--ds-danger); }
+
+/* KALENDARZ */
+.day-section { margin-bottom: 1.5rem; }
+.day-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 0.5px solid var(--ds-line); }
+.day-date { font-family: var(--font-serif); font-size: 16px; font-weight: 500; color: var(--ds-navy); }
+.day-rel { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; font-weight: 500; }
+.day-rel.today { background: rgba(139,42,42,0.10); color: var(--ds-danger); }
+.day-rel.tomorrow { background: rgba(178,106,26,0.15); color: var(--ds-warn); }
+.day-rel.soon { background: rgba(176,138,75,0.15); color: var(--ds-gold); }
+.day-rel.later { background: rgba(31,77,61,0.10); color: var(--ds-bottle); }
+.day-rel.past { background: rgba(138,138,130,0.18); color: var(--ds-ink-soft); }
+.event-card { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 14px; position: relative; cursor: pointer; transition: all 0.15s; }
+.event-card:hover { border-color: var(--ds-navy-soft); }
+.event-card::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 2px; background: var(--ds-line); }
+.event-card.urgent::before { background: var(--ds-danger); }
+.event-card.warn::before { background: var(--ds-warn); }
+.event-card.soon::before { background: var(--ds-gold); }
+.event-card.ok::before { background: var(--ds-bottle); }
+.event-time { flex-shrink: 0; width: 56px; text-align: center; font-family: var(--font-serif); padding-left: 8px; }
+.event-time .h { font-size: 18px; font-weight: 500; color: var(--ds-navy); line-height: 1; }
+.event-time .h.no-time { color: var(--ds-ink-muted); font-size: 11px; letter-spacing: 0.1em; }
+.event-type-icon { width: 36px; height: 36px; flex-shrink: 0; background: var(--ds-cream); border: 0.5px solid var(--ds-line); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ds-bottle); }
+.event-type-icon.medical { background: rgba(160,48,48,0.08); color: #A03030; border-color: rgba(160,48,48,0.25); }
+.event-type-icon.control { background: rgba(27,88,151,0.08); color: #1B5897; border-color: rgba(27,88,151,0.25); }
+.event-type-icon.transport { background: rgba(176,138,75,0.15); color: var(--ds-gold); border-color: rgba(176,138,75,0.4); }
+.event-type-icon.birthday { background: rgba(31,77,61,0.10); color: var(--ds-bottle); border-color: rgba(31,77,61,0.3); }
+.event-main { flex: 1; min-width: 0; }
+.event-title { font-size: 14px; font-weight: 500; font-family: var(--font-serif); }
+.event-meta { margin-top: 3px; font-size: 12px; color: var(--ds-ink-muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.event-meta i { font-size: 11px; vertical-align: -1px; }
+.event-notes { margin-top: 6px; font-size: 12px; color: var(--ds-ink-soft); line-height: 1.45; font-style: italic; padding-left: 10px; border-left: 2px solid var(--ds-line); }
+.event-type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; background: var(--ds-cream); color: var(--ds-ink-soft); }
+.filter-bar { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+.filter-chip { padding: 6px 12px; background: #fff; border: 0.5px solid var(--ds-line); border-radius: 999px; font-size: 11px; color: var(--ds-ink-soft); transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px; }
+.filter-chip:hover { border-color: var(--ds-navy-soft); }
+.filter-chip.active { background: var(--ds-navy); color: #fff; border-color: var(--ds-navy); font-weight: 500; }
+
+/* ALARM */
+.alarm-bg { display: none; position: fixed; inset: 0; background: rgba(15,42,68,0.55); backdrop-filter: blur(3px); z-index: 250; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem; overflow-y: auto; }
+.alarm-bg.show { display: flex; }
+.alarm { background: var(--ds-paper); border-radius: var(--br-lg); border: 0.5px solid var(--ds-line); width: 100%; max-width: 580px; overflow: hidden; box-shadow: 0 30px 80px rgba(15,42,68,0.4); }
+.alarm-header { background: var(--ds-danger); color: #fff; padding: 1.25rem 1.5rem; position: relative; }
+.alarm-header.amber { background: var(--ds-warn); }
+.alarm-header.green { background: var(--ds-bottle); }
+.alarm-header.gold { background: var(--ds-navy); }
+.alarm-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--ds-gold); }
+.alarm-icon { width: 44px; height: 44px; background: rgba(255,255,255,0.18); border: 0.5px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+.alarm-title { font-family: var(--font-serif); font-size: 19px; font-weight: 500; }
+.alarm-sub { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.85); margin-top: 3px; }
+.alarm-body { padding: 1.25rem 1.5rem; max-height: 60vh; overflow-y: auto; }
+.alarm-footer { padding: 1rem 1.5rem; background: #fff; border-top: 0.5px solid var(--ds-line); display: flex; gap: 10px; justify-content: space-between; align-items: center; }
+.alarm-counter { font-size: 13px; color: var(--ds-ink-muted); }
+.alarm-counter strong { color: var(--ds-navy); font-weight: 600; }
+.alarm-item { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-md); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; }
+.alarm-item.red { border-color: var(--ds-danger); background: rgba(139,42,42,0.04); }
+.alarm-item.amber { border-color: var(--ds-warn); background: rgba(178,106,26,0.04); }
+.alarm-check { width: 24px; height: 24px; flex-shrink: 0; border: 1.5px solid var(--ds-line); border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.15s; margin-top: 1px; }
+.alarm-check:hover { border-color: var(--ds-bottle); }
+.alarm-check.done { background: var(--ds-bottle); border-color: var(--ds-bottle); color: #fff; }
+.alarm-content { flex: 1; min-width: 0; }
+.alarm-when { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; margin-bottom: 3px; }
+.alarm-when.urgent { color: var(--ds-danger); }
+.alarm-when.warn { color: var(--ds-warn); }
+.alarm-when.soon { color: var(--ds-gold); }
+.alarm-when.ok { color: var(--ds-bottle); }
+.alarm-resident, .alarm-text { font-size: 14px; font-weight: 500; font-family: var(--font-serif); }
+.alarm-resident.done, .alarm-text.done { text-decoration: line-through; color: var(--ds-ink-muted); }
+.alarm-message { margin-top: 3px; font-size: 13px; }
+.alarm-message.red { color: var(--ds-danger); font-weight: 500; }
+.alarm-message.amber { color: var(--ds-warn); }
+.alarm-list-items { margin-top: 6px; padding-left: 14px; font-size: 12px; color: var(--ds-ink-soft); line-height: 1.6; list-style: disc; }
+.alarm-meta { margin-top: 4px; font-size: 12px; color: var(--ds-ink-muted); }
+
+/* INVOICES */
+.drop-zone { background: #fff; border: 2px dashed var(--ds-line); border-radius: var(--br-lg); padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.15s; position: relative; }
+.drop-zone:hover { border-color: var(--ds-bottle); background: rgba(31,77,61,0.02); }
+.drop-zone i.main { font-size: 42px; color: var(--ds-bottle); display: block; margin-bottom: 12px; }
+.drop-zone p.title { font-size: 15px; font-weight: 500; }
+.drop-zone p.sub { font-size: 12px; color: var(--ds-ink-muted); margin-top: 6px; }
+.drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.drop-helper { background: rgba(176,138,75,0.08); border: 0.5px solid var(--ds-gold); border-radius: var(--br-md); padding: 12px 14px; margin-top: 16px; font-size: 12px; color: var(--ds-ink-soft); line-height: 1.55; display: flex; gap: 10px; align-items: flex-start; }
+.drop-helper i { color: var(--ds-gold); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.progress { padding: 2.5rem 1.5rem; }
+.progress-title { text-align: center; font-size: 15px; font-weight: 500; }
+.progress-sub { text-align: center; font-size: 12px; color: var(--ds-ink-muted); margin-top: 6px; margin-bottom: 20px; }
+.progress-bar { height: 6px; background: var(--ds-line-soft); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.progress-fill { height: 100%; background: var(--ds-bottle); transition: width 0.2s; border-radius: 3px; }
+.progress-count { text-align: center; font-size: 13px; color: var(--ds-ink-soft); font-variant-numeric: tabular-nums; }
+.progress-list { margin-top: 16px; font-size: 12px; max-height: 160px; overflow-y: auto; list-style: none; }
+.progress-list li { padding: 4px 0; display: flex; align-items: center; gap: 8px; color: var(--ds-ink-soft); }
+.progress-list li i { flex-shrink: 0; }
+.progress-list li.pending i { color: var(--ds-ink-muted); }
+.progress-list li.done i { color: var(--ds-bottle); }
+.progress-list li .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.progress-list li .file-status { font-size: 10px; color: var(--ds-ink-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.progress-list li.done .file-status { color: var(--ds-bottle); }
+.batch-summary { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); padding: 16px 18px; margin-bottom: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 16px; }
+.batch-stat { display: flex; flex-direction: column; gap: 4px; }
+.batch-stat-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ds-ink-muted); font-weight: 500; }
+.batch-stat-value { font-family: var(--font-serif); font-size: 22px; font-weight: 500; color: var(--ds-navy); line-height: 1; }
+.batch-stat-value.warn { color: var(--ds-warn); }
+.batch-stat-value.bottle { color: var(--ds-bottle); }
+.batch-card { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); padding: 12px 14px; margin-bottom: 8px; }
+.batch-card.matched { border-left: 3px solid var(--ds-bottle); }
+.batch-card.unmatched { border-left: 3px solid var(--ds-warn); background: rgba(178,106,26,0.03); }
+.batch-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.batch-card-name { flex: 1; min-width: 0; }
+.batch-card-name p.title { font-family: var(--font-serif); font-size: 14px; font-weight: 500; }
+.batch-card-name p.sub { font-size: 11px; color: var(--ds-ink-muted); margin-top: 1px; }
+.batch-card-products { display: flex; flex-direction: column; gap: 4px; margin-left: 42px; }
+.batch-product { display: flex; gap: 10px; align-items: center; padding: 6px 10px; background: var(--ds-cream); border-radius: 4px; font-size: 12px; }
+.batch-product-icon { width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; font-weight: 600; }
+.batch-product-icon.leki { background: rgba(160,48,48,0.10); color: #A03030; }
+.batch-product-icon.mag { background: rgba(31,77,61,0.10); color: var(--ds-bottle); }
+.batch-product-name { flex: 1; min-width: 0; font-weight: 500; }
+.batch-product-detail { font-size: 10px; color: var(--ds-ink-muted); margin-top: 1px; }
+.batch-product-qty { font-family: var(--font-serif); font-weight: 600; color: var(--ds-navy); font-variant-numeric: tabular-nums; }
+.batch-product-qty small { font-family: var(--font-sans); font-weight: 400; color: var(--ds-ink-muted); margin-left: 2px; font-size: 10px; }
+.batch-match { margin-left: 42px; margin-top: 6px; padding: 8px 10px; background: rgba(178,106,26,0.06); border-radius: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.batch-match-label { font-size: 11px; color: var(--ds-warn); font-weight: 500; }
+.batch-match select { flex: 1; min-width: 180px; padding: 5px 8px; font-size: 12px; border: 0.5px solid var(--ds-line); border-radius: 4px; background: #fff; }
+.success-screen { text-align: center; padding: 2rem 1.5rem; }
+.success-icon { width: 64px; height: 64px; background: rgba(31,77,61,0.10); border: 0.5px solid var(--ds-bottle); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ds-bottle); margin: 0 auto 16px; }
+.success-title { font-family: var(--font-serif); font-size: 20px; font-weight: 500; color: var(--ds-bottle); }
+.success-sub { margin-top: 8px; font-size: 13px; color: var(--ds-ink-soft); }
+.success-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin: 16px auto 0; max-width: 480px; }
+.success-stat { background: var(--ds-cream); padding: 10px 12px; border-radius: var(--br-md); }
+.success-stat-num { font-family: var(--font-serif); font-size: 22px; font-weight: 600; color: var(--ds-bottle); }
+.success-stat-lbl { font-size: 11px; color: var(--ds-ink-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+
+/* CONTROLLING */
+.ctrl-wrap { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); overflow-x: auto; }
+.ctrl-tbl { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 720px; }
+.ctrl-tbl th { background: var(--ds-cream); padding: 11px 14px; text-align: left; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ds-navy); font-weight: 500; border-bottom: 0.5px solid var(--ds-line); white-space: nowrap; }
+.ctrl-tbl td { padding: 9px 14px; border-bottom: 0.5px solid var(--ds-line-soft); vertical-align: middle; }
+.ctrl-tbl tr:last-child td { border-bottom: 0; }
+.ctrl-tbl tr:hover td { background: var(--ds-paper); }
+.ctrl-tbl input, .ctrl-tbl select { width: 100%; padding: 6px 8px; background: transparent; border: 0.5px solid transparent; border-radius: 4px; font-size: 13px; }
+.ctrl-tbl input:hover, .ctrl-tbl select:hover { border-color: var(--ds-line); background: var(--ds-paper); }
+.ctrl-tbl input:focus, .ctrl-tbl select:focus { outline: none; border-color: var(--ds-navy); background: #fff; box-shadow: 0 0 0 2px rgba(15,42,68,0.08); }
+.ctrl-tbl .col-lp { width: 50px; text-align: center; color: var(--ds-ink-muted); font-variant-numeric: tabular-nums; }
+.ctrl-tbl .col-name { min-width: 200px; font-weight: 500; font-family: var(--font-serif); }
+.ctrl-tbl .cell-amount { font-variant-numeric: tabular-nums; text-align: right; padding-right: 16px; font-weight: 500; }
+.ctrl-tbl .cell-total { font-variant-numeric: tabular-nums; text-align: right; padding-right: 16px; font-weight: 600; color: var(--ds-bottle); font-family: var(--font-serif); }
+.ctrl-tbl tfoot td { background: var(--ds-cream); font-weight: 600; padding: 12px 14px; border-top: 0.5px solid var(--ds-line); font-family: var(--font-serif); font-size: 14px; }
+.ctrl-tbl tfoot .cell-amount, .ctrl-tbl tfoot .cell-total { color: var(--ds-navy); }
+
+/* GRAFIKI */
+.grafiki-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.grafik-card { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); padding: 16px; position: relative; }
+.grafik-card.empty-slot { background: var(--ds-paper); border-style: dashed; cursor: pointer; transition: all 0.15s; }
+.grafik-card.empty-slot:hover { border-color: var(--ds-bottle); }
+.grafik-year { font-family: var(--font-serif); font-size: 36px; font-weight: 500; color: var(--ds-navy); line-height: 1; }
+.grafik-cat { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px; }
+.grafik-cat.all { background: rgba(15,42,68,0.10); color: var(--ds-navy); }
+.grafik-cat.uop { background: rgba(31,77,61,0.10); color: var(--ds-bottle); }
+.grafik-cat.uz { background: rgba(176,138,75,0.15); color: var(--ds-gold-dark); }
+.grafik-months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; margin-top: 12px; }
+.grafik-month { font-size: 9px; color: var(--ds-ink-muted); text-align: center; padding: 4px 0; background: var(--ds-cream); border-radius: 2px; font-weight: 500; }
+.grafik-file { margin-top: 12px; padding: 10px; background: var(--ds-cream); border-radius: var(--br-md); font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 0.5px solid var(--ds-line); }
+.grafik-file i { color: #1F7A3D; font-size: 18px; }
+.grafik-file-name { flex: 1; font-weight: 500; }
+.grafik-file-size { color: var(--ds-ink-muted); font-size: 11px; }
+
+/* WZORY */
+.wzory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.wzor-card { background: #fff; border: 0.5px solid var(--ds-line); border-radius: var(--br-lg); padding: 14px; cursor: pointer; transition: all 0.15s; }
+.wzor-card:hover { border-color: var(--ds-navy-soft); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15,42,68,0.06); }
+.wzor-icon { width: 36px; height: 36px; border-radius: var(--br-md); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px; }
+.wzor-icon.xls { background: rgba(31,122,61,0.10); color: #1F7A3D; }
+.wzor-icon.pdf { background: rgba(160,48,48,0.10); color: #A03030; }
+.wzor-icon.doc { background: rgba(27,88,151,0.10); color: #1B5897; }
+.wzor-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
+.wzor-desc { font-size: 11px; color: var(--ds-ink-muted); margin-top: 4px; line-height: 1.4; }
+.wzor-cat { margin-top: 8px; display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; background: var(--ds-cream); color: var(--ds-ink-soft); letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500; }
+
+@media (max-width: 640px) {
+  .header { padding: 1rem 1.1rem; flex-wrap: wrap; }
+  .header-title { font-size: 16px; }
+  .header-actions { width: 100%; margin-top: 8px; gap: 6px; }
+  .header-btn, .header-logout { flex: 1; justify-content: center; }
+  .content { padding: 1rem; }
+  .tabs { top: 124px; padding: 0 0.5rem; }
+  .tab { padding: 12px 10px; font-size: 12px; }
+  .modal-body, .modal-header, .modal-footer { padding: 1rem 1.1rem; }
+  .alarm-body, .alarm-header, .alarm-footer { padding: 1rem 1.1rem; }
+  .field-row, .field-row-3 { grid-template-columns: 1fr; }
+  .batch-card-products, .batch-match { margin-left: 0; }
+  .event-card { flex-wrap: wrap; }
+  .event-time { width: auto; padding-left: 12px; text-align: left; }
+  .login-card { padding: 1.75rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-crest"><i class="ti ti-building-castle" style="font-size:26px;" aria-hidden="true"></i></div>
+      <p class="login-eyebrow">Fundacja</p>
+      <h1 class="serif login-title">Dom Seniora</h1>
+      <p class="login-sub">Panel administracyjny</p>
+      <div class="login-divider">Logowanie</div>
+      <label class="label">Hasło dostępu</label>
+      <input type="password" id="pwd-input" class="input" placeholder="••••••" autocomplete="off" />
+      <p id="login-error" class="error-msg"></p>
+      <button id="login-btn" class="btn-primary" style="width:100%; margin-top:4px; justify-content:center;"><i class="ti ti-key" style="font-size:14px;" aria-hidden="true"></i>Wejdź do systemu</button>
+      <p style="margin-top:16px; text-align:center; font-size:11px; color:var(--ds-ink-muted);">Hasło testowe: <strong>123</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" style="display:none;">
+  <div class="app">
+    <header class="header">
+      <div class="header-brand">
+        <div class="header-crest"><i class="ti ti-building-castle" style="font-size:20px;" aria-hidden="true"></i></div>
+        <div style="min-width:0;">
+          <div class="header-title serif">Dom Seniora</div>
+          <div class="header-sub">Panel zarządzania</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="upload-invoice-btn" class="header-btn"><i class="ti ti-file-upload" style="font-size:14px;" aria-hidden="true"></i><span>Wgraj faktury</span></button>
+        <button id="logout-btn" class="header-logout"><i class="ti ti-logout" style="font-size:13px;" aria-hidden="true"></i><span>Wyloguj</span></button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <button class="tab active" data-tab="mieszkancy"><i class="ti ti-users" style="font-size:14px;" aria-hidden="true"></i>Mieszkańcy</button>
+      <button class="tab" data-tab="dokumentacja"><i class="ti ti-stethoscope" style="font-size:14px;" aria-hidden="true"></i>Dokumentacja</button>
+      <button class="tab" data-tab="leki"><i class="ti ti-pill" style="font-size:14px;" aria-hidden="true"></i>Leki</button>
+      <button class="tab" data-tab="magazyn"><i class="ti ti-package" style="font-size:14px;" aria-hidden="true"></i>Magazyn</button>
+      <button class="tab" data-tab="kalendarz"><i class="ti ti-calendar-event" style="font-size:14px;" aria-hidden="true"></i>Kalendarz</button>
+      <button class="tab" data-tab="controlling"><i class="ti ti-coin" style="font-size:14px;" aria-hidden="true"></i>Controlling</button>
+      <button class="tab" data-tab="grafiki"><i class="ti ti-calendar" style="font-size:14px;" aria-hidden="true"></i>Grafiki</button>
+      <button class="tab" data-tab="wzory"><i class="ti ti-files" style="font-size:14px;" aria-hidden="true"></i>Wzory</button>
+    </nav>
+    <main class="content">
+
+      <section id="tab-mieszkancy" class="tab-panel">
+        <div class="summary-bar">
+          <div class="summary-item"><span class="summary-label">Zajętość</span><span class="summary-value" id="mz-occ">0<small>/30</small></span></div>
+          <div class="summary-item"><span class="summary-label">Wolne</span><span class="summary-value bottle" id="mz-free">0</span></div>
+          <div class="summary-item"><span class="summary-label">Aktywni</span><span class="summary-value" id="mz-act">0</span></div>
+          <div class="summary-item"><span class="summary-label">Średni wiek</span><span class="summary-value" id="mz-avg">0<small>lat</small></span></div>
+        </div>
+        <div class="toolbar">
+          <input type="text" id="search-mz" class="input" placeholder="Szukaj: nazwisko, pokój, PESEL..." />
+          <button id="mz-add" class="btn-accent"><i class="ti ti-plus" style="font-size:14px;" aria-hidden="true"></i>Nowy mieszkaniec</button>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-chip active" data-mz-filter="active">Aktywni</button>
+          <button class="filter-chip" data-mz-filter="discharged">Wypisani</button>
+          <button class="filter-chip" data-mz-filter="deceased">Zmarli</button>
+          <button class="filter-chip" data-mz-filter="all">Wszyscy</button>
+        </div>
+        <div id="mz-list"></div>
+      </section>
+
+      <section id="tab-dokumentacja" class="tab-panel" style="display:none;">
+        <div class="info-banner"><i class="ti ti-folder" aria-hidden="true"></i><span>Folder z dokumentacją medyczną każdego mieszkańca: <strong>wypisy ze szpitali, opisy operacji, wyniki badań</strong>. Kliknij mieszkańca aby rozwinąć i dodawać pliki.</span></div>
+        <div class="toolbar"><input type="text" id="search-dok" class="input" placeholder="Wyszukaj mieszkańca..." /></div>
+        <div id="dok-list"></div>
+      </section>
+
+      <section id="tab-leki" class="tab-panel" style="display:none;">
+        <div class="info-banner"><i class="ti ti-info-circle" aria-hidden="true"></i><span>Kolumna <strong>„Stan"</strong> zawsze pokazuje ile masz dziś — codziennie automatycznie odejmuje. Dawkowanie <strong>1-1-2</strong> (rano-poł.-wiecz.) lub <strong>0,5-0,5-1</strong>. Po dostawie wpisz nową, większą liczbę.</span></div>
+        <div class="toolbar"><input type="text" id="search-leki" class="input" placeholder="Wyszukaj mieszkańca..." /></div>
+        <div id="leki-list"></div>
+      </section>
+
+      <section id="tab-magazyn" class="tab-panel" style="display:none;">
+        <div class="info-banner"><i class="ti ti-info-circle" aria-hidden="true"></i><span>Każdy mieszkaniec ma 3 stałe pozycje: <strong>pieluchy, podkłady, pianka</strong>. Stan odejmuje się sam codziennie. 1 OPK pieluch z faktury = 30 sztuk (auto).</span></div>
+        <div class="summary-bar">
+          <div class="summary-item"><span class="summary-label">Mieszkańców</span><span class="summary-value" id="mag-residents">0</span></div>
+          <div class="summary-item"><span class="summary-label">Pozycji</span><span class="summary-value" id="mag-products">0</span></div>
+          <div class="summary-item"><span class="summary-label">Krytyczne</span><span class="summary-value danger" id="mag-red">0</span></div>
+          <div class="summary-item"><span class="summary-label">Ostrzeżenia</span><span class="summary-value warn" id="mag-amber">0</span></div>
+        </div>
+        <div class="toolbar"><input type="text" id="search-mag" class="input" placeholder="Wyszukaj mieszkańca..." /></div>
+        <div id="mag-list"></div>
+      </section>
+
+      <section id="tab-kalendarz" class="tab-panel" style="display:none;">
+        <div class="info-banner"><i class="ti ti-bell-ringing" aria-hidden="true"></i><span>Po zalogowaniu wyskakuje <strong>okienko z przypomnieniami na 7 dni</strong>. Wizyty, kontrole, urodziny, transport, przeglądy.</span></div>
+        <div class="toolbar">
+          <input type="text" id="search-cal" class="input" placeholder="Szukaj po tytule, mieszkańcu..." />
+          <button id="add-event-btn" class="btn-accent"><i class="ti ti-plus" style="font-size:14px;" aria-hidden="true"></i>Nowe wydarzenie</button>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-chip active" data-cal-filter="upcoming">Nadchodzące</button>
+          <button class="filter-chip" data-cal-filter="today">Dziś</button>
+          <button class="filter-chip" data-cal-filter="week">Tydzień</button>
+          <button class="filter-chip" data-cal-filter="month">Miesiąc</button>
+          <button class="filter-chip" data-cal-filter="past">Minione</button>
+          <button class="filter-chip" data-cal-filter="all">Wszystkie</button>
+        </div>
+        <div id="events-list"></div>
+      </section>
+
+      <section id="tab-controlling" class="tab-panel" style="display:none;">
+        <div class="info-banner"><i class="ti ti-coin" aria-hidden="true"></i><span>Lista płatności mieszkańców: forma, dzień miesiąca, kwota podstawowa, dopłaty (np. święta, urodziny). Sumy aktualizują się automatycznie.</span></div>
+        <div class="summary-bar">
+          <div class="summary-item"><span class="summary-label">Rozliczanych</span><span class="summary-value" id="ctrl-count">0</span></div>
+          <div class="summary-item"><span class="summary-label">Podstawowa</span><span class="summary-value" id="ctrl-base">0<small>zł</small></span></div>
+          <div class="summary-item"><span class="summary-label">Dopłaty</span><span class="summary-value" id="ctrl-extra">0<small>zł</small></span></div>
+          <div class="summary-item"><span class="summary-label">Razem</span><span class="summary-value bottle" id="ctrl-total">0<small>zł</small></span></div>
+        </div>
+        <div class="ctrl-wrap">
+          <table class="ctrl-tbl">
+            <thead><tr>
+              <th class="col-lp">L.p.</th>
+              <th class="col-name">Mieszkaniec</th>
+              <th style="width:120px;">Forma</th>
+              <th style="width:80px;">Dzień</th>
+              <th style="width:110px; text-align:right; padding-right:16px;">Kwota</th>
+              <th style="min-width:180px;">Różne (opis)</th>
+              <th style="width:110px; text-align:right; padding-right:16px;">Kwota różne</th>
+              <th style="width:110px; text-align:right; padding-right:16px;">Razem</th>
+              <th style="width:36px;"></th>
+            </tr></thead>
+            <tbody id="ctrl-body"></tbody>
+            <tfoot><tr>
+              <td colspan="4">SUMA</td>
+              <td class="cell-amount" id="ctrl-foot-base">0,00 zł</td>
+              <td></td>
+              <td class="cell-amount" id="ctrl-foot-extra">0,00 zł</td>
+              <td class="cell-total" id="ctrl-foot-total">0,00 zł</td>
+              <td></td>
+            </tr></tfoot>
+          </table>
+          <div style="padding:12px; background:#fff; border-top:0.5px solid var(--ds-line); text-align:center;">
+            <button id="ctrl-add" class="btn-accent"><i class="ti ti-plus" style="font-size:14px;" aria-hidden="true"></i>Dodaj wiersz</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-grafiki" class="tab-panel" style="display:none;">
+        <div class="info-banner"><i class="ti ti-calendar" aria-hidden="true"></i><span>Jeden plik Excel na cały rok (12 zakładek miesięcznych w środku). 3 kategorie: Wszyscy / Umowy o pracę / Zleceniobiorcy.</span></div>
+        <div class="toolbar">
+          <div style="font-size:13px;">Rok:</div>
+          <select id="gr-year" class="select" style="width:120px; flex:0 0 auto;">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+        <div class="grafiki-grid" id="grafiki-grid"></div>
+      </section>
+
+      <section id="tab-wzory" class="tab-panel" style="display:none;">
+        <div class="info-banner"><i class="ti ti-files" aria-hidden="true"></i><span>Wzory dokumentów w 6 kategoriach: <strong>Kadrowe, Mieszkańcy, Medyczne, Operacyjne, Sanepid/HACCP, BHP/PPOŻ</strong>. Wyszukiwarka działa po nazwie, opisie i tagach.</span></div>
+        <div class="toolbar">
+          <input type="text" id="search-wzory" class="input" placeholder="Szukaj po nazwie, opisie, tagach..." />
+          <button id="wzory-add" class="btn-accent"><i class="ti ti-plus" style="font-size:14px;" aria-hidden="true"></i>Dodaj wzór</button>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-chip active" data-wz-cat="all">Wszystkie</button>
+          <button class="filter-chip" data-wz-cat="kadry">Kadrowe</button>
+          <button class="filter-chip" data-wz-cat="mieszkancy">Mieszkańcy</button>
+          <button class="filter-chip" data-wz-cat="medyczne">Medyczne</button>
+          <button class="filter-chip" data-wz-cat="operacyjne">Operacyjne</button>
+          <button class="filter-chip" data-wz-cat="sanepid">Sanepid/HACCP</button>
+          <button class="filter-chip" data-wz-cat="bhp">BHP/PPOŻ</button>
+        </div>
+        <div class="wzory-grid" id="wzory-grid"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL MIESZKANIEC -->
+<div id="modal-resident" class="modal-bg"><div class="modal modal-wide">
+  <div class="modal-header"><div style="display:flex; align-items:center; gap:12px;"><div class="modal-icon"><i class="ti ti-user" style="font-size:18px;" aria-hidden="true"></i></div><div><h3 class="modal-title" id="mz-modal-title">Nowy mieszkaniec</h3><p class="modal-sub">Dane podstawowe</p></div></div><button id="mz-close" class="modal-close"><i class="ti ti-x" style="font-size:14px;" aria-hidden="true"></i></button></div>
+  <div class="modal-body">
+    <div class="field-row"><div class="field"><label class="label">Imię</label><input type="text" id="mz-first" class="input" /></div><div class="field"><label class="label">Nazwisko</label><input type="text" id="mz-last" class="input" /></div></div>
+    <div class="field-row-3"><div class="field"><label class="label">PESEL</label><input type="text" id="mz-pesel" class="input" maxlength="11" placeholder="11 cyfr" /></div><div class="field"><label class="label">Data urodzenia</label><input type="date" id="mz-bdate" class="input" /></div><div class="field"><label class="label">Płeć</label><select id="mz-gender" class="select"><option value="K">Kobieta</option><option value="M">Mężczyzna</option></select></div></div>
+    <div class="field-row-3"><div class="field"><label class="label">Pokój</label><input type="text" id="mz-room" class="input" /></div><div class="field"><label class="label">Data przyjęcia</label><input type="date" id="mz-admit" class="input" /></div><div class="field"><label class="label">Status</label><select id="mz-status" class="select"><option value="active">Aktywny</option><option value="discharged">Wypisany</option><option value="deceased">Zmarły</option></select></div></div>
+    <div class="field-row"><div class="field"><label class="label">Samodzielność</label><select id="mz-autonomy" class="select"><option value="full">Samodzielny</option><option value="partial">Częściowo</option><option value="bed">Leżący</option></select></div><div class="field"><label class="label">Orzeczenie niepełnosprawności</label><select id="mz-disability" class="select"><option value="">Brak</option><option value="light">Lekki</option><option value="moderate">Umiarkowany</option><option value="severe">Znaczny</option></select></div></div>
+    <div class="field"><label class="label">Adres</label><input type="text" id="mz-address" class="input" placeholder="np. ul. Główna 5, 84-200 Wejherowo" /></div>
+    <div class="field"><label class="label">Uwagi</label><textarea id="mz-notes" class="textarea" rows="3"></textarea></div>
+    <p id="mz-err" class="error-msg"></p>
+  </div>
+  <div class="modal-footer"><button id="mz-delete" class="btn-danger" style="display:none;"><i class="ti ti-trash" style="font-size:13px;" aria-hidden="true"></i>Usuń</button><div style="display:flex; gap:10px; margin-left:auto;"><button id="mz-cancel" class="btn-ghost">Anuluj</button><button id="mz-save" class="btn-primary">Zapisz</button></div></div>
+</div></div>
+
+<!-- MODAL WYDARZENIE -->
+<div id="modal-event" class="modal-bg"><div class="modal">
+  <div class="modal-header"><div style="display:flex; align-items:center; gap:12px;"><div class="modal-icon"><i class="ti ti-calendar-plus" style="font-size:18px;" aria-hidden="true"></i></div><div><h3 class="modal-title" id="event-modal-title">Nowe wydarzenie</h3><p class="modal-sub">Wizyta, badanie, kontrola</p></div></div><button id="event-close" class="modal-close"><i class="ti ti-x" style="font-size:14px;" aria-hidden="true"></i></button></div>
+  <div class="modal-body">
+    <div class="field"><label class="label">Tytuł</label><input type="text" id="e-title" class="input" placeholder="np. Wizyta u kardiologa" /></div>
+    <div class="field-row">
+      <div class="field"><label class="label">Typ</label><select id="e-type" class="select">
+        <option value="kardiolog">Wizyta — Kardiolog</option><option value="nefrolog">Wizyta — Nefrolog</option><option value="urolog">Wizyta — Urolog</option><option value="neurolog">Wizyta — Neurolog</option><option value="geriatra">Wizyta — Geriatra</option><option value="lekarz">Wizyta — Lekarz rodzinny</option><option value="fizjo">Fizjoterapia</option><option value="badanie">Badanie / diagnostyka</option><option value="transport">Transport medyczny</option><option value="kontrola">Kontrola (Sanepid, PCPR, PIP, NFZ)</option><option value="urodziny">Urodziny mieszkańca</option><option value="rodzina">Wizyta rodziny</option><option value="przeglad">Przegląd techniczny</option><option value="inne">Inne</option>
+      </select></div>
+      <div class="field"><label class="label">Mieszkaniec (opcjonalnie)</label><select id="e-resident" class="select"></select></div>
+    </div>
+    <div class="field-row"><div class="field"><label class="label">Data</label><input type="date" id="e-date" class="input" /></div><div class="field"><label class="label">Godzina (opcjonalna)</label><input type="time" id="e-time" class="input" /></div></div>
+    <div class="field"><label class="label">Notatki</label><textarea id="e-notes" class="textarea" rows="3"></textarea></div>
+    <p id="e-err" class="error-msg"></p>
+  </div>
+  <div class="modal-footer"><button id="e-delete" class="btn-danger" style="display:none;"><i class="ti ti-trash" style="font-size:13px;" aria-hidden="true"></i>Usuń</button><div style="display:flex; gap:10px; margin-left:auto;"><button id="e-cancel" class="btn-ghost">Anuluj</button><button id="e-save" class="btn-primary">Zapisz</button></div></div>
+</div></div>
+
+<!-- MODAL WZÓR -->
+<div id="modal-wzor" class="modal-bg"><div class="modal">
+  <div class="modal-header"><div style="display:flex; align-items:center; gap:12px;"><div class="modal-icon"><i class="ti ti-file-plus" style="font-size:18px;" aria-hidden="true"></i></div><div><h3 class="modal-title" id="wzor-modal-title">Dodaj wzór</h3><p class="modal-sub">Szablon dokumentu</p></div></div><button id="wzor-close" class="modal-close"><i class="ti ti-x" style="font-size:14px;" aria-hidden="true"></i></button></div>
+  <div class="modal-body">
+    <div class="field"><label class="label">Nazwa</label><input type="text" id="wz-name" class="input" placeholder="np. Umowa o pracę — opiekun" /></div>
+    <div class="field-row">
+      <div class="field"><label class="label">Kategoria</label><select id="wz-cat" class="select"><option value="kadry">Kadrowe</option><option value="mieszkancy">Mieszkańcy</option><option value="medyczne">Medyczne</option><option value="operacyjne">Operacyjne</option><option value="sanepid">Sanepid/HACCP</option><option value="bhp">BHP/PPOŻ</option></select></div>
+      <div class="field"><label class="label">Format</label><select id="wz-fmt" class="select"><option value="docx">Word</option><option value="xlsx">Excel</option><option value="pdf">PDF</option></select></div>
+    </div>
+    <div class="field"><label class="label">Opis</label><textarea id="wz-desc" class="textarea" rows="2"></textarea></div>
+    <div class="field"><label class="label">Tagi (po przecinku)</label><input type="text" id="wz-tags" class="input" placeholder="np. umowa, kadry" /></div>
+    <p id="wz-err" class="error-msg"></p>
+  </div>
+  <div class="modal-footer"><button id="wz-delete" class="btn-danger" style="display:none;"><i class="ti ti-trash" style="font-size:13px;" aria-hidden="true"></i>Usuń</button><div style="display:flex; gap:10px; margin-left:auto;"><button id="wz-cancel" class="btn-ghost">Anuluj</button><button id="wz-save" class="btn-primary">Zapisz</button></div></div>
+</div></div>
+
+<!-- MODAL FAKTURY -->
+<div id="invoice-modal" class="modal-bg"><div class="modal modal-wide">
+  <div class="modal-header"><div style="display:flex; align-items:center; gap:12px;"><div class="modal-icon"><i class="ti ti-file-invoice" style="font-size:18px;" aria-hidden="true"></i></div><div><h3 class="modal-title" id="invoice-title">Wgraj faktury</h3><p class="modal-sub" id="invoice-subtitle">AI rozpozna i zapisze</p></div></div><button id="invoice-close" class="modal-close"><i class="ti ti-x" style="font-size:14px;" aria-hidden="true"></i></button></div>
+  <div class="modal-body" id="invoice-body"></div>
+  <div class="modal-footer" id="invoice-footer"></div>
+</div></div>
+
+<!-- ALARM POPUP -->
+<div id="alarm-popup" class="alarm-bg"><div class="alarm">
+  <div class="alarm-header" id="alarm-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div class="alarm-icon"><i class="ti ti-bell-ringing" style="font-size:22px;" aria-hidden="true"></i></div>
+      <div><h3 class="alarm-title" id="alarm-title">Przypomnienia</h3><p class="alarm-sub" id="alarm-sub">Sprawdź i odhacz</p></div>
+    </div>
+  </div>
+  <div class="alarm-body" id="alarm-body"></div>
+  <div class="alarm-footer"><span class="alarm-counter" id="alarm-counter"></span><button id="alarm-close" class="btn-primary" style="padding:9px 22px;">Zamknij</button></div>
+</div></div>
+
+
+<script>
+'use strict';
+
+// ==================== STORAGE & STATE ====================
+const STORAGE_KEY = 'dom_seniora_full_v1';
+let state = null;
+const recentlyImported = new Set();
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function escapeHtml(s) { return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function initials(r) { return ((r.firstName||'')[0]||'') + ((r.lastName||'')[0]||''); }
+function fullName(r) { return ((r.firstName||'') + ' ' + (r.lastName||'')).trim(); }
+function fullNameLF(r) { return ((r.lastName||'') + ' ' + (r.firstName||'')).trim(); }
+function parseNum(v) { if (v==null||v==='') return 0; const n = parseFloat(String(v).replace(',','.').replace(/\s/g,'')); return isNaN(n)?0:n; }
+function todayISO() { return new Date().toISOString().slice(0,10); }
+function parseDate(d) { return new Date(d+'T00:00:00'); }
+function daysBetween(fromISO, toISO) { return Math.max(0, Math.round((parseDate(toISO)-parseDate(fromISO))/86400000)); }
+function daysDiff(dateISO) { const t = new Date(); t.setHours(0,0,0,0); return Math.round((parseDate(dateISO)-t)/86400000); }
+function fmtDateShort(d) { return d.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function fmtPL(d) { return d.toLocaleDateString('pl-PL',{day:'numeric',month:'long'}); }
+function fmtFullDate(s) { return parseDate(s).toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
+function fmtRelative(days) { if (days<0) return Math.abs(days)===1?'wczoraj':Math.abs(days)+' dni temu'; if (days===0) return 'DZIŚ'; if (days===1) return 'JUTRO'; if (days<=6) return 'za '+days+' dni'; if (days===7) return 'za tydzień'; return 'za '+days+' dni'; }
+function urgencyClass(d) { if (d<0) return 'past'; if (d===0) return 'today'; if (d<=2) return 'tomorrow'; if (d<=7) return 'soon'; return 'later'; }
+function urgencyBorder(d) { if (d===0) return 'urgent'; if (d<=2) return 'warn'; if (d<=7) return 'soon'; return 'ok'; }
+function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate()+n); return d; }
+function fmtPln(n) { if (n==null||isNaN(n)) return '0,00 zł'; return n.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' zł'; }
+function calcAge(b) { if (!b) return 0; const d = new Date(b); const t = new Date(); let a = t.getFullYear()-d.getFullYear(); if (t.getMonth()<d.getMonth()||(t.getMonth()===d.getMonth()&&t.getDate()<d.getDate())) a--; return a; }
+function parseDose(s) { if (!s) return 0; const parts = String(s).replace(/\s/g,'').replace(/,/g,'.').split(/[-x\/]/); let sum=0,ok=false; for (const p of parts) { const n=parseFloat(p); if (!isNaN(n)) { sum+=n; ok=true; } } return ok?sum:0; }
+function currentStockToday(b, d, daily) { const base=parseNum(b); if (!base||!daily||!d) return base||0; const p=daysBetween(d, todayISO()); return Math.max(0, base-p*daily); }
+function alertLevel(daysLeft, current) { if (daysLeft==null) return 'none'; if (current===0) return 'red'; if (daysLeft<=7) return 'red'; if (daysLeft<=14) return 'amber'; return 'green'; }
+function medInfo(m) { const daily=parseDose(m.dose); if (!daily||!m.baselineStock||!m.baselineDate) return {daily,currentToday:parseNum(m.baselineStock)||0,daysLeft:null,endDate:null,daysPassed:0,baselineStock:parseNum(m.baselineStock)||0}; const passed=daysBetween(m.baselineDate, todayISO()); const cur=currentStockToday(m.baselineStock,m.baselineDate,daily); const dl=cur>0?Math.floor(cur/daily):0; return {daily,currentToday:cur,daysLeft:dl,endDate:dl>0?addDays(new Date(),dl):new Date(),daysPassed:passed,baselineStock:parseNum(m.baselineStock)}; }
+function magInfo(it) { const daily=parseNum(it.dailyUsage); if (!daily||!it.baselineStock||!it.baselineDate) return {daily,currentToday:parseNum(it.baselineStock)||0,daysLeft:null,endDate:null,daysPassed:0,baselineStock:parseNum(it.baselineStock)||0}; const passed=daysBetween(it.baselineDate, todayISO()); const cur=currentStockToday(it.baselineStock,it.baselineDate,daily); const dl=cur>0?Math.floor(cur/daily):0; return {daily,currentToday:cur,daysLeft:dl,endDate:dl>0?addDays(new Date(),dl):new Date(),daysPassed:passed,baselineStock:parseNum(it.baselineStock)}; }
+function normalize(s) { return (s||'').toLowerCase().replace(/[ąćęłńóśźż]/g,c=>({'ą':'a','ć':'c','ę':'e','ł':'l','ń':'n','ó':'o','ś':'s','ź':'z','ż':'z'})[c]).replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean).sort().join(' '); }
+function findResidentMatch(name) { const n=normalize(name); return state.residents.find(r => normalize(fullName(r))===n); }
+function statusBadge(s) { if (s==='active') return '<span class="status-badge status-active">Aktywny</span>'; if (s==='discharged') return '<span class="status-badge status-discharged">Wypisany</span>'; if (s==='deceased') return '<span class="status-badge status-deceased">Zmarły</span>'; return ''; }
+
+function loadState() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) { state = JSON.parse(raw); ensureStateShape(); return; } } catch(e) {}
+  state = createInitialState(); saveState();
+}
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+function ensureStateShape() {
+  if (!state.residents) state.residents = [];
+  if (!state.meds) state.meds = {};
+  if (!state.magazyn) state.magazyn = {};
+  if (!state.events) state.events = [];
+  if (!state.ctrl) state.ctrl = [];
+  if (!state.grafiki) state.grafiki = [];
+  if (!state.wzory) state.wzory = [];
+  if (!state.dokumenty) state.dokumenty = {};
+  if (!state.dismissed) state.dismissed = {};
+  if (!state.dismissedAlarm) state.dismissedAlarm = {};
+  state.residents.forEach(r => { if (!state.meds[r.id]) state.meds[r.id] = []; ensureFixedMag(r.id); });
+}
+function ensureFixedMag(rid) {
+  if (!state.magazyn[rid]) state.magazyn[rid] = [];
+  const FIXED = [{key:'pieluchy',name:'Pieluchomajtki'},{key:'podklady',name:'Podkłady chłonne'},{key:'pianka',name:'Pianka do mycia'}];
+  FIXED.forEach(f => { if (!state.magazyn[rid].find(p => p.key===f.key)) state.magazyn[rid].push({id:uid(),key:f.key,name:f.name,isFixed:true,baselineStock:'',baselineDate:'',dailyUsage:''}); });
+  state.magazyn[rid].sort((a,b) => {
+    const order = ['pieluchy','podklady','pianka'];
+    if (a.isFixed && b.isFixed) return order.indexOf(a.key)-order.indexOf(b.key);
+    if (a.isFixed) return -1; if (b.isFixed) return 1;
+    return (a.name||'').localeCompare(b.name||'','pl');
+  });
+}
+
+function createInitialState() {
+  const today = new Date();
+  const minus = n => { const d = new Date(today); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); };
+  const plus = n => { const d = new Date(today); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+  const residents = [
+    {id:1,firstName:'Anna',lastName:'Kowalska',room:'12',pesel:'45010512345',birthDate:'1945-01-05',gender:'K',admitDate:'2023-05-10',status:'active',autonomy:'partial',disability:'moderate',address:'ul. Warszawska 12, 80-001 Gdańsk',notes:'Dieta cukrzycowa.'},
+    {id:2,firstName:'Janusz',lastName:'Nowak',room:'7',pesel:'38030287654',birthDate:'1938-03-02',gender:'M',admitDate:'2022-11-20',status:'active',autonomy:'partial',disability:'severe',address:'ul. Słoneczna 8, 84-100 Puck',notes:'Po udarze (2021).'},
+    {id:3,firstName:'Halina',lastName:'Wiśniewska',room:'3',pesel:'50061256789',birthDate:'1950-06-12',gender:'K',admitDate:'2024-02-15',status:'active',autonomy:'full',disability:'',address:'ul. Morska 22, 84-200 Wejherowo',notes:'Samodzielna.'},
+    {id:4,firstName:'Stanisław',lastName:'Lewandowski',room:'15',pesel:'35112098765',birthDate:'1935-11-20',gender:'M',admitDate:'2022-03-08',status:'active',autonomy:'bed',disability:'severe',address:'ul. Kościuszki 5, 84-200 Wejherowo',notes:'Leżący. Pełna opieka.'},
+    {id:5,firstName:'Krystyna',lastName:'Walter',room:'5',pesel:'42072345612',birthDate:'1942-07-23',gender:'K',admitDate:'2024-09-01',status:'active',autonomy:'partial',disability:'moderate',address:'ul. Szeroka 1, 84-252 Góra',notes:''},
+    {id:6,firstName:'Bronisława',lastName:'Malinowska',room:'8',pesel:'40081556789',birthDate:'1940-08-15',gender:'K',admitDate:'2024-06-12',status:'active',autonomy:'partial',disability:'moderate',address:'ul. Szeroka 1, 84-252 Góra',notes:''},
+    {id:7,firstName:'Maria',lastName:'Kodłubańska',room:'11',pesel:'43050478912',birthDate:'1943-05-04',gender:'K',admitDate:'2023-08-22',status:'active',autonomy:'full',disability:'light',address:'ul. Polna 14, 84-200 Wejherowo',notes:''},
+    {id:8,firstName:'Ryszard',lastName:'Górny',room:'2',pesel:'37102189456',birthDate:'1937-10-21',gender:'M',admitDate:'2023-12-01',status:'active',autonomy:'partial',disability:'severe',address:'',notes:''}
+  ];
+  return {
+    residents,
+    meds: {
+      1: [{id:uid(),name:'Bisocard 5 mg',dose:'1-0-0',baselineStock:30,baselineDate:minus(20)},{id:uid(),name:'Tritico CR 150 mg',dose:'0-0-1',baselineStock:60,baselineDate:minus(55)},{id:uid(),name:'Metformax 850 mg',dose:'1-0-1',baselineStock:100,baselineDate:minus(40)}],
+      2: [{id:uid(),name:'Polopiryna S',dose:'1-0-1',baselineStock:50,baselineDate:minus(8)},{id:uid(),name:'Memotropil 800 mg',dose:'1-1-1',baselineStock:120,baselineDate:minus(15)}],
+      3: [{id:uid(),name:'Acard 75 mg',dose:'0-1-0',baselineStock:60,baselineDate:minus(2)}],
+      4: [{id:uid(),name:'Furosemid 40 mg',dose:'1-0-0',baselineStock:30,baselineDate:minus(25)},{id:uid(),name:'Spironol 25 mg',dose:'1-0-0',baselineStock:90,baselineDate:minus(10)}]
+    },
+    magazyn: {
+      1: [{id:uid(),key:'pieluchy',name:'Pieluchomajtki',isFixed:true,baselineStock:60,baselineDate:minus(18),dailyUsage:3},{id:uid(),key:'podklady',name:'Podkłady chłonne',isFixed:true,baselineStock:30,baselineDate:minus(5),dailyUsage:2},{id:uid(),key:'pianka',name:'Pianka do mycia',isFixed:true,baselineStock:1,baselineDate:minus(10),dailyUsage:0.05}],
+      4: [{id:uid(),key:'pieluchy',name:'Pieluchomajtki',isFixed:true,baselineStock:120,baselineDate:minus(20),dailyUsage:5},{id:uid(),key:'podklady',name:'Podkłady chłonne',isFixed:true,baselineStock:90,baselineDate:minus(12),dailyUsage:3},{id:uid(),key:'pianka',name:'Pianka do mycia',isFixed:true,baselineStock:3,baselineDate:minus(15),dailyUsage:0.1},{id:uid(),key:'custom',name:'Rękawiczki nitrylowe (100 szt.)',isFixed:false,baselineStock:4,baselineDate:minus(5),dailyUsage:0.5}]
+    },
+    events: [
+      {id:uid(),title:'Wizyta — kardiolog',type:'kardiolog',residentId:4,date:plus(0),time:'10:30',notes:'Transport medyczny zorganizowany. Karta NFZ.'},
+      {id:uid(),title:'Badanie krwi',type:'badanie',residentId:1,date:plus(1),time:'08:00',notes:'Na czczo! Powiadomić kuchnię.'},
+      {id:uid(),title:'Wizyta — nefrolog',type:'nefrolog',residentId:2,date:plus(3),time:'14:00',notes:'Wziąć ostatnie wyniki USG.'},
+      {id:uid(),title:'Urodziny — Halina Wiśniewska (76 lat)',type:'urodziny',residentId:3,date:plus(5),time:'',notes:'Zamówić tort.'},
+      {id:uid(),title:'Przegląd gaśnic',type:'przeglad',residentId:null,date:plus(7),time:'09:00',notes:''},
+      {id:uid(),title:'Kontrola Sanepid',type:'kontrola',residentId:null,date:plus(14),time:'11:00',notes:'Przygotować HACCP.'}
+    ],
+    ctrl: [
+      {id:uid(),residentId:1,payForm:'przelew',payDay:5,amount:4900,extraDesc:'',extraAmount:0},
+      {id:uid(),residentId:2,payForm:'gotówka',payDay:5,amount:4900,extraDesc:'',extraAmount:0},
+      {id:uid(),residentId:3,payForm:'przelew',payDay:5,amount:4800,extraDesc:'',extraAmount:0},
+      {id:uid(),residentId:4,payForm:'przelew',payDay:15,amount:5000,extraDesc:'',extraAmount:0},
+      {id:uid(),residentId:7,payForm:'przelew',payDay:5,amount:4900,extraDesc:'',extraAmount:0},
+      {id:uid(),residentId:8,payForm:'przelew',payDay:5,amount:4900,extraDesc:'Wielkanoc 2026',extraAmount:200}
+    ],
+    grafiki: [{id:uid(),year:2026,category:'all',fileName:'Grafik_2026_wszyscy.xlsx',fileSize:'184 KB'},{id:uid(),year:2026,category:'uop',fileName:'Grafik_2026_UOP.xlsx',fileSize:'142 KB'}],
+    wzory: [
+      {id:uid(),name:'Umowa o pracę — opiekun',category:'kadry',format:'docx',desc:'Standardowa umowa',tags:'umowa, kadry'},
+      {id:uid(),name:'Umowa zlecenie',category:'kadry',format:'docx',desc:'Wzór z RODO',tags:'umowa, zlecenie'},
+      {id:uid(),name:'Karta urlopowa',category:'kadry',format:'xlsx',desc:'',tags:'urlop'},
+      {id:uid(),name:'Zgoda mieszkańca + RODO',category:'mieszkancy',format:'docx',desc:'',tags:'zgoda, RODO'},
+      {id:uid(),name:'Karta przyjęcia mieszkańca',category:'mieszkancy',format:'docx',desc:'',tags:'przyjęcie'},
+      {id:uid(),name:'Indywidualny Plan Wsparcia',category:'mieszkancy',format:'docx',desc:'Wymóg PCPR',tags:'IPW, PCPR'},
+      {id:uid(),name:'Karta podawania leków',category:'medyczne',format:'xlsx',desc:'',tags:'leki'},
+      {id:uid(),name:'Karta obserwacji medycznej',category:'medyczne',format:'docx',desc:'',tags:'obserwacja'},
+      {id:uid(),name:'Raport zmiany — dyżur',category:'operacyjne',format:'docx',desc:'',tags:'raport, dyżur'},
+      {id:uid(),name:'Procedura mycia mieszkańca',category:'operacyjne',format:'pdf',desc:'',tags:'procedura'},
+      {id:uid(),name:'HACCP — kontrola temperatury',category:'sanepid',format:'xlsx',desc:'',tags:'HACCP'},
+      {id:uid(),name:'Karta jadłospisu',category:'sanepid',format:'docx',desc:'',tags:'jadłospis'},
+      {id:uid(),name:'Karta szkolenia BHP',category:'bhp',format:'docx',desc:'',tags:'BHP'},
+      {id:uid(),name:'Karta instruktażu PPOŻ',category:'bhp',format:'docx',desc:'',tags:'PPOŻ'},
+      {id:uid(),name:'Protokół ewakuacji',category:'bhp',format:'pdf',desc:'',tags:'ewakuacja'},
+      {id:uid(),name:'Karta przeglądu gaśnic',category:'bhp',format:'pdf',desc:'',tags:'gaśnice'}
+    ],
+    dokumenty: {}, dismissed: {}, dismissedAlarm: {}
+  };
+}
+
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+
+
+// ==================== MIESZKANCY ====================
+let mzFilter = 'active';
+let editingResidentId = null;
+function renderMieszkancy() {
+  const q = (document.getElementById('search-mz').value||'').toLowerCase();
+  const list = document.getElementById('mz-list');
+  const active = state.residents.filter(r => r.status==='active');
+  document.getElementById('mz-occ').innerHTML = active.length+'<small>/30</small>';
+  document.getElementById('mz-free').textContent = Math.max(0, 30-active.length);
+  document.getElementById('mz-act').textContent = active.length;
+  const ages = active.filter(r => r.birthDate).map(r => calcAge(r.birthDate));
+  document.getElementById('mz-avg').innerHTML = (ages.length?Math.round(ages.reduce((a,b)=>a+b,0)/ages.length):0)+'<small>lat</small>';
+  let filtered = state.residents;
+  if (mzFilter!=='all') filtered = filtered.filter(r => r.status===mzFilter);
+  if (q) filtered = filtered.filter(r => fullName(r).toLowerCase().includes(q) || (r.room||'').toLowerCase().includes(q) || (r.pesel||'').includes(q));
+  filtered.sort((a,b) => fullNameLF(a).localeCompare(fullNameLF(b),'pl'));
+  if (!filtered.length) { list.innerHTML = '<div class="empty"><i class="ti ti-users-minus" aria-hidden="true"></i><p>Brak mieszkańców.</p></div>'; return; }
+  list.innerHTML = filtered.map(r => {
+    const age = r.birthDate ? calcAge(r.birthDate)+' lat' : '';
+    const aut = ({full:'samodzielny',partial:'częściowo',bed:'leżący'})[r.autonomy]||'';
+    return `<div class="resident-card" data-edit-mz="${r.id}"><div class="resident-card-row"><div class="avatar">${escapeHtml(initials(r))}</div><div class="resident-card-main"><p class="resident-card-name">${escapeHtml(fullName(r))}</p><p class="resident-card-meta">Pokój ${escapeHtml(r.room||'—')}${age?'<span class="dot">•</span>'+age:''}${aut?'<span class="dot">•</span>'+aut:''}</p></div>${statusBadge(r.status)}</div></div>`;
+  }).join('');
+  list.querySelectorAll('[data-edit-mz]').forEach(el => el.onclick = () => openEditResident(parseInt(el.dataset.editMz)));
+}
+function openNewResident() {
+  editingResidentId = null;
+  document.getElementById('mz-modal-title').textContent = 'Nowy mieszkaniec';
+  ['mz-first','mz-last','mz-pesel','mz-bdate','mz-room','mz-admit','mz-address','mz-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('mz-gender').value='K';
+  document.getElementById('mz-status').value='active';
+  document.getElementById('mz-autonomy').value='full';
+  document.getElementById('mz-disability').value='';
+  document.getElementById('mz-admit').value=todayISO();
+  document.getElementById('mz-delete').style.display='none';
+  document.getElementById('mz-err').textContent='';
+  showModal('modal-resident');
+}
+function openEditResident(id) {
+  editingResidentId = id;
+  const r = state.residents.find(x => x.id===id); if (!r) return;
+  document.getElementById('mz-modal-title').textContent = 'Edytuj: '+fullName(r);
+  document.getElementById('mz-first').value = r.firstName||'';
+  document.getElementById('mz-last').value = r.lastName||'';
+  document.getElementById('mz-pesel').value = r.pesel||'';
+  document.getElementById('mz-bdate').value = r.birthDate||'';
+  document.getElementById('mz-gender').value = r.gender||'K';
+  document.getElementById('mz-room').value = r.room||'';
+  document.getElementById('mz-admit').value = r.admitDate||'';
+  document.getElementById('mz-status').value = r.status||'active';
+  document.getElementById('mz-autonomy').value = r.autonomy||'full';
+  document.getElementById('mz-disability').value = r.disability||'';
+  document.getElementById('mz-address').value = r.address||'';
+  document.getElementById('mz-notes').value = r.notes||'';
+  document.getElementById('mz-delete').style.display='inline-flex';
+  document.getElementById('mz-err').textContent='';
+  showModal('modal-resident');
+}
+function saveResident() {
+  const first = document.getElementById('mz-first').value.trim();
+  const last = document.getElementById('mz-last').value.trim();
+  if (!first||!last) { document.getElementById('mz-err').textContent='Imię i nazwisko są wymagane.'; return; }
+  const pesel = document.getElementById('mz-pesel').value.trim();
+  if (pesel && !/^\d{11}$/.test(pesel)) { document.getElementById('mz-err').textContent='PESEL musi mieć 11 cyfr.'; return; }
+  const data = { firstName:first, lastName:last, pesel, birthDate:document.getElementById('mz-bdate').value, gender:document.getElementById('mz-gender').value, room:document.getElementById('mz-room').value.trim(), admitDate:document.getElementById('mz-admit').value, status:document.getElementById('mz-status').value, autonomy:document.getElementById('mz-autonomy').value, disability:document.getElementById('mz-disability').value, address:document.getElementById('mz-address').value.trim(), notes:document.getElementById('mz-notes').value.trim() };
+  if (editingResidentId) Object.assign(state.residents.find(x=>x.id===editingResidentId), data);
+  else { const newId = Math.max(0,...state.residents.map(r=>r.id))+1; state.residents.push({id:newId,...data}); state.meds[newId]=[]; ensureFixedMag(newId); }
+  saveState(); hideModal('modal-resident'); renderMieszkancy(); fillResidentSelect();
+}
+function deleteResident() {
+  if (!editingResidentId) return;
+  const r = state.residents.find(x=>x.id===editingResidentId); if (!r) return;
+  if (!confirm('Usunąć: '+fullName(r)+'?\n\nUsunie też leki, magazyn i wpisy controllingu.')) return;
+  state.residents = state.residents.filter(x=>x.id!==editingResidentId);
+  delete state.meds[editingResidentId]; delete state.magazyn[editingResidentId]; delete state.dokumenty[editingResidentId];
+  state.ctrl = state.ctrl.filter(c=>c.residentId!==editingResidentId);
+  state.events = state.events.filter(e=>e.residentId!==editingResidentId);
+  saveState(); hideModal('modal-resident'); renderMieszkancy(); fillResidentSelect();
+}
+
+// ==================== DOKUMENTACJA ====================
+function renderDokumentacja() {
+  const q = (document.getElementById('search-dok').value||'').toLowerCase();
+  const list = document.getElementById('dok-list');
+  const filtered = state.residents.filter(r => r.status==='active' && fullName(r).toLowerCase().includes(q)).sort((a,b)=>fullNameLF(a).localeCompare(fullNameLF(b),'pl'));
+  if (!filtered.length) { list.innerHTML = '<div class="empty"><i class="ti ti-folder-off" aria-hidden="true"></i><p>Brak mieszkańców.</p></div>'; return; }
+  list.innerHTML = filtered.map(r => {
+    const docs = state.dokumenty[r.id]||[];
+    return `<div class="resident-block"><div class="resident-head" data-toggle-dok="${r.id}"><div class="avatar-sm">${escapeHtml(initials(r))}</div><div class="resident-head-main"><p class="resident-head-name">${escapeHtml(fullName(r))}</p><p class="resident-head-meta">Pokój ${escapeHtml(r.room||'—')} • ${docs.length} ${docs.length===1?'plik':docs.length<5?'pliki':'plików'}</p></div><i class="ti ti-chevron-down chev" data-chev-dok="${r.id}" style="font-size:18px;" aria-hidden="true"></i></div><div style="display:none; padding:14px 16px;" data-body-dok="${r.id}">${docs.length?docs.map(d=>`<div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--ds-cream); border-radius:6px; margin-bottom:6px;"><i class="ti ti-file" style="color:var(--ds-bottle); font-size:18px;" aria-hidden="true"></i><div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500;">${escapeHtml(d.name)}</div><div style="font-size:11px; color:var(--ds-ink-muted); margin-top:2px;">${escapeHtml(d.date)} · ${escapeHtml(d.size||'')}</div></div><button class="rm-btn" data-rm-dok="${r.id}|${d.id}"><i class="ti ti-x" style="font-size:13px;" aria-hidden="true"></i></button></div>`).join(''):'<p style="font-size:12px; color:var(--ds-ink-muted); font-style:italic; padding:8px 0;">Brak dokumentów.</p>'}<button class="btn-ghost" data-add-dok="${r.id}" style="margin-top:4px;"><i class="ti ti-upload" style="font-size:13px;" aria-hidden="true"></i>Dodaj plik</button></div></div>`;
+  }).join('');
+  list.querySelectorAll('[data-toggle-dok]').forEach(el => el.onclick = (e) => {
+    if (e.target.closest('button')) return;
+    const rid = el.dataset.toggleDok;
+    const body = list.querySelector(`[data-body-dok="${rid}"]`);
+    const chev = list.querySelector(`[data-chev-dok="${rid}"]`);
+    const open = body.style.display!=='none';
+    body.style.display = open?'none':'block';
+    chev.style.transform = open?'rotate(0deg)':'rotate(180deg)';
+  });
+  list.querySelectorAll('[data-add-dok]').forEach(b => b.onclick = () => {
+    const rid = parseInt(b.dataset.addDok);
+    const name = prompt('Nazwa pliku (np. „Wypis ze szpitala 2026-04-12"):');
+    if (!name) return;
+    if (!state.dokumenty[rid]) state.dokumenty[rid] = [];
+    state.dokumenty[rid].push({id:uid(),name:name.trim(),date:todayISO(),size:'— KB'});
+    saveState(); renderDokumentacja();
+  });
+  list.querySelectorAll('[data-rm-dok]').forEach(b => b.onclick = () => {
+    const [rid, did] = b.dataset.rmDok.split('|');
+    if (!confirm('Usunąć ten plik?')) return;
+    state.dokumenty[rid] = (state.dokumenty[rid]||[]).filter(d=>d.id!==did);
+    saveState(); renderDokumentacja();
+  });
+}
+
+// ==================== LEKI ====================
+function renderLeki() {
+  const q = (document.getElementById('search-leki').value||'').toLowerCase();
+  const list = document.getElementById('leki-list');
+  const filtered = state.residents.filter(r => r.status==='active' && fullName(r).toLowerCase().includes(q)).sort((a,b)=>fullNameLF(a).localeCompare(fullNameLF(b),'pl'));
+  if (!filtered.length) { list.innerHTML='<div class="empty"><i class="ti ti-pill-off" aria-hidden="true"></i><p>Brak mieszkańców.</p></div>'; return; }
+  list.innerHTML = filtered.map(r => {
+    const meds = state.meds[r.id]||[];
+    let red=0,amber=0;
+    meds.forEach(m=>{ const i=medInfo(m); const lvl=alertLevel(i.daysLeft,i.currentToday); if (lvl==='red') red++; else if (lvl==='amber') amber++; });
+    const fresh = recentlyImported.has(r.id);
+    let alertHtml = fresh ? `<span class="resident-head-alert alert-fresh"><i class="ti ti-check" style="font-size:11px;" aria-hidden="true"></i>Wpisano z faktury</span>` : red ? `<span class="resident-head-alert alert-red"><i class="ti ti-alert-triangle" style="font-size:11px;" aria-hidden="true"></i>${red} ${red===1?'lek się kończy':'leków się kończy'}</span>` : amber ? `<span class="resident-head-alert alert-amber"><i class="ti ti-clock" style="font-size:11px;" aria-hidden="true"></i>${amber} do uzupełnienia</span>` : meds.length ? `<span class="resident-head-alert alert-green"><i class="ti ti-check" style="font-size:11px;" aria-hidden="true"></i>Stan OK</span>` : '';
+    return `<div class="resident-block"><div class="resident-head" data-toggle-leki="${r.id}"><div class="avatar-sm">${escapeHtml(initials(r))}</div><div class="resident-head-main"><p class="resident-head-name">${escapeHtml(fullName(r))}</p><p class="resident-head-meta">Pokój ${escapeHtml(r.room||'—')} • ${meds.length} ${meds.length===1?'lek':'leków'}</p></div>${alertHtml}<i class="ti ti-chevron-down chev" data-chev-leki="${r.id}" style="font-size:18px; transform:rotate(180deg);" aria-hidden="true"></i></div><div class="tab-wrap" data-body-leki="${r.id}"><table class="tab-tbl"><thead><tr><th style="min-width:180px;">Nazwa leku</th><th style="width:100px;">Dawka</th><th style="width:90px; text-align:right;">Dz. dawka</th><th style="width:170px;">Stan (dziś)</th><th style="width:100px; text-align:right;">Starczy</th><th style="width:130px;">Koniec</th><th style="width:36px;"></th></tr></thead><tbody>${meds.map(m=>renderMedRow(r.id,m)).join('')}${meds.length===0?'<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--ds-ink-muted); font-style:italic; font-size:12px;">Brak leków.</td></tr>':''}</tbody></table><div class="tab-add-row"><button class="btn-ghost" data-add-med="${r.id}"><i class="ti ti-plus" style="font-size:13px;" aria-hidden="true"></i>Dodaj lek</button></div></div></div>`;
+  }).join('');
+  list.querySelectorAll('[data-toggle-leki]').forEach(el => el.onclick = (e) => { if (e.target.closest('input,button')) return; const rid=el.dataset.toggleLeki; const body=list.querySelector(`[data-body-leki="${rid}"]`); const chev=list.querySelector(`[data-chev-leki="${rid}"]`); const open=body.style.display!=='none'; body.style.display=open?'none':'block'; chev.style.transform=open?'rotate(0deg)':'rotate(180deg)'; });
+  list.querySelectorAll('[data-add-med]').forEach(b => b.onclick = () => { const rid=parseInt(b.dataset.addMed); state.meds[rid]=state.meds[rid]||[]; state.meds[rid].push({id:uid(),name:'',dose:'',baselineStock:'',baselineDate:''}); saveState(); renderLeki(); });
+  list.querySelectorAll('input[data-med-field]').forEach(inp => {
+    inp.oninput = () => {
+      const rid=parseInt(inp.dataset.rid); const mid=inp.dataset.mid; const field=inp.dataset.medField;
+      const med=state.meds[rid].find(m=>m.id===mid); if (!med) return;
+      if (field==='stockToday') { med.baselineStock=inp.value; med.baselineDate=todayISO(); }
+      else med[field]=inp.value;
+    };
+    inp.onblur = () => { saveState(); renderLeki(); };
+  });
+  list.querySelectorAll('[data-rm-med]').forEach(b => b.onclick = () => { const rid=parseInt(b.dataset.rid); const mid=b.dataset.rmMed; if (!confirm('Usunąć ten lek?')) return; state.meds[rid]=(state.meds[rid]||[]).filter(m=>m.id!==mid); saveState(); renderLeki(); });
+}
+function renderMedRow(rid, m) {
+  const info = medInfo(m);
+  const lvl = alertLevel(info.daysLeft, info.currentToday);
+  const isFresh = info.daysPassed===0 && m.baselineDate;
+  const endText = (info.endDate && info.daysLeft>0) ? fmtDateShort(info.endDate) : (info.daysLeft===0 && info.daily ? 'BRAK' : '—');
+  const stockClass = isFresh ? 'fresh' : (lvl==='red' ? 'red' : lvl==='amber' ? 'amber' : '');
+  const display = (m.baselineStock===''||m.baselineStock==null) ? '' : (info.daily>0 ? info.currentToday : parseNum(m.baselineStock));
+  let meta = '';
+  if (m.baselineDate && info.daily>0) {
+    if (info.daysPassed===0) meta = `<div class="stock-meta fresh">wpisane dziś ✓</div>`;
+    else meta = `<div class="stock-meta">ostatnio: ${escapeHtml(fmtPL(parseDate(m.baselineDate)))} (<strong>${info.baselineStock}</strong>), zużyto ${(info.daysPassed*info.daily).toLocaleString('pl-PL',{maximumFractionDigits:1})}</div>`;
+  } else if (!m.baselineDate) meta = `<div class="stock-meta" style="font-style:italic;">wpisz stan</div>`;
+  return `<tr><td><input type="text" data-med-field="name" data-rid="${rid}" data-mid="${m.id}" value="${escapeHtml(m.name)}" placeholder="np. Tritico CR 150 mg" /></td><td><input type="text" data-med-field="dose" data-rid="${rid}" data-mid="${m.id}" value="${escapeHtml(m.dose)}" placeholder="1-1-2" /></td><td class="cell-calc">${info.daily?info.daily.toLocaleString('pl-PL',{maximumFractionDigits:1}):'—'}</td><td><input type="text" class="stock-edit ${stockClass}" data-med-field="stockToday" data-rid="${rid}" data-mid="${m.id}" value="${display===''?'':(typeof display==='number'?display.toLocaleString('pl-PL',{maximumFractionDigits:1}):display)}" placeholder="—" />${meta}</td><td class="cell-calc">${info.daysLeft!=null?(info.daysLeft>0?info.daysLeft+' dni':'BRAK'):'—'}</td><td class="cell-date ${lvl}">${endText}</td><td><button class="rm-btn" data-rm-med="${m.id}" data-rid="${rid}"><i class="ti ti-x" style="font-size:13px;" aria-hidden="true"></i></button></td></tr>`;
+}
+
+
+// ==================== MAGAZYN ====================
+function renderMag() {
+  const q = (document.getElementById('search-mag').value||'').toLowerCase();
+  const list = document.getElementById('mag-list');
+  const filtered = state.residents.filter(r => r.status==='active' && fullName(r).toLowerCase().includes(q)).sort((a,b)=>fullNameLF(a).localeCompare(fullNameLF(b),'pl'));
+  let totalProducts=0,totalRed=0,totalAmber=0;
+  state.residents.filter(r=>r.status==='active').forEach(r => {
+    ensureFixedMag(r.id);
+    (state.magazyn[r.id]||[]).forEach(it => { const info=magInfo(it); const lvl=alertLevel(info.daysLeft,info.currentToday); totalProducts++; if (lvl==='red') totalRed++; else if (lvl==='amber') totalAmber++; });
+  });
+  document.getElementById('mag-residents').textContent = filtered.length;
+  document.getElementById('mag-products').textContent = totalProducts;
+  document.getElementById('mag-red').textContent = totalRed;
+  document.getElementById('mag-amber').textContent = totalAmber;
+  if (!filtered.length) { list.innerHTML='<div class="empty"><i class="ti ti-package-off" aria-hidden="true"></i><p>Brak mieszkańców.</p></div>'; return; }
+  list.innerHTML = filtered.map(r => {
+    ensureFixedMag(r.id);
+    const items = state.magazyn[r.id]||[];
+    let red=0,amber=0;
+    items.forEach(it => { const i=magInfo(it); const lvl=alertLevel(i.daysLeft,i.currentToday); if (lvl==='red') red++; else if (lvl==='amber') amber++; });
+    const fresh = recentlyImported.has(r.id);
+    let alertHtml = fresh ? `<span class="resident-head-alert alert-fresh"><i class="ti ti-check" style="font-size:11px;" aria-hidden="true"></i>Wpisano z faktury</span>` : red ? `<span class="resident-head-alert alert-red"><i class="ti ti-alert-triangle" style="font-size:11px;" aria-hidden="true"></i>${red} ${red===1?'produkt się kończy':'produkty się kończą'}</span>` : amber ? `<span class="resident-head-alert alert-amber"><i class="ti ti-clock" style="font-size:11px;" aria-hidden="true"></i>${amber} do uzupełnienia</span>` : `<span class="resident-head-alert alert-green"><i class="ti ti-check" style="font-size:11px;" aria-hidden="true"></i>Stan OK</span>`;
+    return `<div class="resident-block"><div class="resident-head" data-toggle-mag="${r.id}"><div class="avatar-sm">${escapeHtml(initials(r))}</div><div class="resident-head-main"><p class="resident-head-name">${escapeHtml(fullName(r))}</p><p class="resident-head-meta">Pokój ${escapeHtml(r.room||'—')} • ${items.length} ${items.length===1?'pozycja':items.length<5?'pozycje':'pozycji'}</p></div>${alertHtml}<i class="ti ti-chevron-down chev" data-chev-mag="${r.id}" style="font-size:18px; transform:rotate(180deg);" aria-hidden="true"></i></div><div class="tab-wrap" data-body-mag="${r.id}"><table class="tab-tbl"><thead><tr><th style="min-width:180px;">Produkt</th><th style="width:120px; text-align:right;">Zużycie/dzień</th><th style="width:170px;">Stan (dziś)</th><th style="width:100px; text-align:right;">Starczy</th><th style="width:130px;">Koniec</th><th style="width:36px;"></th></tr></thead><tbody>${items.map(it=>renderMagRow(r.id,it)).join('')}</tbody></table><div class="tab-add-row"><button class="btn-ghost" data-add-mag="${r.id}"><i class="ti ti-plus" style="font-size:13px;" aria-hidden="true"></i>Dodaj inny produkt</button></div></div></div>`;
+  }).join('');
+  list.querySelectorAll('[data-toggle-mag]').forEach(el => el.onclick = (e) => { if (e.target.closest('input,button')) return; const rid=el.dataset.toggleMag; const body=list.querySelector(`[data-body-mag="${rid}"]`); const chev=list.querySelector(`[data-chev-mag="${rid}"]`); const open=body.style.display!=='none'; body.style.display=open?'none':'block'; chev.style.transform=open?'rotate(0deg)':'rotate(180deg)'; });
+  list.querySelectorAll('[data-add-mag]').forEach(b => b.onclick = () => { const rid=parseInt(b.dataset.addMag); state.magazyn[rid]=state.magazyn[rid]||[]; state.magazyn[rid].push({id:uid(),key:'custom',name:'',isFixed:false,baselineStock:'',baselineDate:'',dailyUsage:''}); saveState(); renderMag(); });
+  list.querySelectorAll('input[data-mag-field]').forEach(inp => {
+    inp.oninput = () => {
+      const rid=parseInt(inp.dataset.rid); const iid=inp.dataset.iid; const field=inp.dataset.magField;
+      const item=state.magazyn[rid].find(x=>x.id===iid); if (!item) return;
+      if (field==='stockToday') { item.baselineStock=inp.value; item.baselineDate=todayISO(); }
+      else item[field]=inp.value;
+    };
+    inp.onblur = () => { saveState(); renderMag(); };
+  });
+  list.querySelectorAll('[data-rm-mag]').forEach(b => b.onclick = () => {
+    const rid=parseInt(b.dataset.rid); const iid=b.dataset.rmMag;
+    const item=state.magazyn[rid].find(x=>x.id===iid); if (!item||item.isFixed) return;
+    if (!confirm('Usunąć: '+(item.name||'(bez nazwy)')+'?')) return;
+    state.magazyn[rid]=state.magazyn[rid].filter(x=>x.id!==iid); saveState(); renderMag();
+  });
+}
+function renderMagRow(rid, item) {
+  const info = magInfo(item);
+  const lvl = alertLevel(info.daysLeft, info.currentToday);
+  const isFresh = info.daysPassed===0 && item.baselineDate;
+  const endText = (info.endDate && info.daysLeft>0) ? fmtDateShort(info.endDate) : (info.daysLeft===0 && info.daily ? 'BRAK' : '—');
+  const stockClass = isFresh ? 'fresh' : (lvl==='red' ? 'red' : lvl==='amber' ? 'amber' : '');
+  const display = (item.baselineStock===''||item.baselineStock==null) ? '' : (info.daily>0 ? info.currentToday : parseNum(item.baselineStock));
+  let meta = '';
+  if (item.baselineDate && info.daily>0) {
+    if (info.daysPassed===0) meta = `<div class="stock-meta fresh">wpisane dziś ✓</div>`;
+    else meta = `<div class="stock-meta">ostatnio: ${escapeHtml(fmtPL(parseDate(item.baselineDate)))} (<strong>${info.baselineStock}</strong>), zużyto ${(info.daysPassed*info.daily).toLocaleString('pl-PL',{maximumFractionDigits:1})}</div>`;
+  } else if (!item.baselineDate) meta = `<div class="stock-meta" style="font-style:italic;">wpisz stan</div>`;
+  const nameCell = item.isFixed ? `<span style="display:inline-flex; align-items:center; gap:6px;"><i class="ti ti-${item.key==='pieluchy'?'baby-bottle':item.key==='podklady'?'layers-subtract':'spray'}" style="color:var(--ds-bottle); font-size:14px;" aria-hidden="true"></i><span style="font-weight:500; color:var(--ds-navy);">${escapeHtml(item.name)}</span></span>` : `<input type="text" data-mag-field="name" data-rid="${rid}" data-iid="${item.id}" value="${escapeHtml(item.name)}" placeholder="np. Rękawiczki" />`;
+  return `<tr><td>${nameCell}</td><td><input type="text" data-mag-field="dailyUsage" data-rid="${rid}" data-iid="${item.id}" value="${escapeHtml(item.dailyUsage)}" placeholder="0" style="text-align:right;" /></td><td><input type="text" class="stock-edit ${stockClass}" data-mag-field="stockToday" data-rid="${rid}" data-iid="${item.id}" value="${display===''?'':(typeof display==='number'?display.toLocaleString('pl-PL',{maximumFractionDigits:1}):display)}" placeholder="—" />${meta}</td><td class="cell-calc">${info.daysLeft!=null?(info.daysLeft>0?info.daysLeft+' dni':'BRAK'):'—'}</td><td class="cell-date ${lvl}">${endText}</td><td>${item.isFixed?`<button class="rm-btn disabled" title="Stała pozycja"><i class="ti ti-lock" style="font-size:11px;" aria-hidden="true"></i></button>`:`<button class="rm-btn" data-rm-mag="${item.id}" data-rid="${rid}"><i class="ti ti-x" style="font-size:13px;" aria-hidden="true"></i></button>`}</td></tr>`;
+}
+
+// ==================== KALENDARZ ====================
+let calFilter = 'upcoming';
+let editingEventId = null;
+function typeLabel(t) { return ({kardiolog:'Kardiolog',nefrolog:'Nefrolog',urolog:'Urolog',neurolog:'Neurolog',geriatra:'Geriatra',lekarz:'Lekarz rodzinny',fizjo:'Fizjoterapia',badanie:'Badanie',transport:'Transport medyczny',kontrola:'Kontrola',urodziny:'Urodziny',rodzina:'Wizyta rodziny',przeglad:'Przegląd techniczny',inne:'Inne'})[t]||t; }
+function typeIcon(t) { const m = {kardiolog:{i:'heartbeat',cls:'medical'},nefrolog:{i:'droplet-half',cls:'medical'},urolog:{i:'stethoscope',cls:'medical'},neurolog:{i:'brain',cls:'medical'},geriatra:{i:'stethoscope',cls:'medical'},lekarz:{i:'stethoscope',cls:'medical'},fizjo:{i:'yoga',cls:'medical'},badanie:{i:'microscope',cls:'medical'},transport:{i:'ambulance',cls:'transport'},kontrola:{i:'clipboard-check',cls:'control'},urodziny:{i:'cake',cls:'birthday'},rodzina:{i:'users',cls:''},przeglad:{i:'tools',cls:'control'},inne:{i:'calendar',cls:''}}; return m[t]||{i:'calendar',cls:''}; }
+function fillResidentSelect() {
+  const sel = document.getElementById('e-resident');
+  const opts = ['<option value="">— bez mieszkańca —</option>'];
+  state.residents.filter(r=>r.status==='active').sort((a,b)=>fullNameLF(a).localeCompare(fullNameLF(b),'pl')).forEach(r => opts.push(`<option value="${r.id}">${escapeHtml(fullName(r))}${r.room?' · pokój '+escapeHtml(r.room):''}</option>`));
+  sel.innerHTML = opts.join('');
+}
+function renderEvents() {
+  const q = (document.getElementById('search-cal').value||'').toLowerCase().trim();
+  const list = document.getElementById('events-list');
+  let events = state.events.filter(e => {
+    if (!q) return true;
+    const r = e.residentId ? state.residents.find(x=>x.id===e.residentId) : null;
+    return [e.title,e.notes,typeLabel(e.type),r?fullName(r):''].join(' ').toLowerCase().includes(q);
+  });
+  events = events.filter(e => {
+    const d = daysDiff(e.date);
+    switch (calFilter) { case 'today': return d===0; case 'week': return d>=0 && d<=7; case 'month': return d>=0 && d<=30; case 'past': return d<0; case 'all': return true; default: return d>=0; }
+  });
+  events.sort((a,b)=>(a.date+' '+(a.time||'00:00')).localeCompare(b.date+' '+(b.time||'00:00')));
+  if (calFilter==='past') events.reverse();
+  if (!events.length) { list.innerHTML = '<div class="empty"><i class="ti ti-calendar-off" aria-hidden="true"></i><p>Brak wydarzeń.</p></div>'; return; }
+  const groups = {};
+  events.forEach(e => { (groups[e.date]=groups[e.date]||[]).push(e); });
+  list.innerHTML = Object.keys(groups).sort((a,b)=>calFilter==='past'?b.localeCompare(a):a.localeCompare(b)).map(date => {
+    const days = daysDiff(date);
+    return `<div class="day-section"><div class="day-header"><span class="day-date">${fmtFullDate(date)}</span><span class="day-rel ${urgencyClass(days)}">${fmtRelative(days)}</span></div>${groups[date].map(e=>renderEventCard(e,days)).join('')}</div>`;
+  }).join('');
+  list.querySelectorAll('[data-edit-evt]').forEach(el => el.onclick = () => openEditEvent(el.dataset.editEvt));
+}
+function renderEventCard(e, days) {
+  const ti = typeIcon(e.type);
+  const u = urgencyBorder(days);
+  const r = e.residentId ? state.residents.find(x=>x.id===e.residentId) : null;
+  return `<div class="event-card ${u}" data-edit-evt="${e.id}"><div class="event-time"><div class="h ${e.time?'':'no-time'}">${e.time||'cały dzień'}</div></div><div class="event-type-icon ${ti.cls}"><i class="ti ti-${ti.i}" style="font-size:18px;" aria-hidden="true"></i></div><div class="event-main"><p class="event-title">${escapeHtml(e.title)}</p><p class="event-meta"><span><i class="ti ti-tag" aria-hidden="true"></i> <span class="event-type-badge">${typeLabel(e.type)}</span></span>${r?`<span><i class="ti ti-user" aria-hidden="true"></i> ${escapeHtml(fullName(r))}${r.room?' · pok. '+escapeHtml(r.room):''}</span>`:''}</p>${e.notes?`<p class="event-notes">${escapeHtml(e.notes)}</p>`:''}</div></div>`;
+}
+function openNewEvent() {
+  editingEventId = null;
+  document.getElementById('event-modal-title').textContent='Nowe wydarzenie';
+  document.getElementById('e-title').value='';
+  document.getElementById('e-type').value='kardiolog';
+  document.getElementById('e-resident').value='';
+  document.getElementById('e-date').value=todayISO();
+  document.getElementById('e-time').value='';
+  document.getElementById('e-notes').value='';
+  document.getElementById('e-delete').style.display='none';
+  document.getElementById('e-err').textContent='';
+  showModal('modal-event');
+}
+function openEditEvent(id) {
+  editingEventId = id;
+  const e = state.events.find(x=>x.id===id); if (!e) return;
+  document.getElementById('event-modal-title').textContent='Edytuj wydarzenie';
+  document.getElementById('e-title').value=e.title||'';
+  document.getElementById('e-type').value=e.type||'inne';
+  document.getElementById('e-resident').value=e.residentId||'';
+  document.getElementById('e-date').value=e.date||'';
+  document.getElementById('e-time').value=e.time||'';
+  document.getElementById('e-notes').value=e.notes||'';
+  document.getElementById('e-delete').style.display='inline-flex';
+  document.getElementById('e-err').textContent='';
+  showModal('modal-event');
+}
+function saveEvent() {
+  const title=document.getElementById('e-title').value.trim();
+  const date=document.getElementById('e-date').value;
+  if (!title) { document.getElementById('e-err').textContent='Podaj tytuł.'; return; }
+  if (!date) { document.getElementById('e-err').textContent='Wybierz datę.'; return; }
+  const data = {title,type:document.getElementById('e-type').value,residentId:parseInt(document.getElementById('e-resident').value)||null,date,time:document.getElementById('e-time').value,notes:document.getElementById('e-notes').value.trim()};
+  if (editingEventId) Object.assign(state.events.find(x=>x.id===editingEventId), data);
+  else state.events.push({id:uid(),...data});
+  saveState(); hideModal('modal-event'); renderEvents();
+}
+function deleteEvent() {
+  if (!editingEventId) return;
+  if (!confirm('Usunąć wydarzenie?')) return;
+  state.events = state.events.filter(x=>x.id!==editingEventId);
+  saveState(); hideModal('modal-event'); renderEvents();
+}
+
+
+// ==================== CONTROLLING ====================
+function renderControlling() {
+  const tbody = document.getElementById('ctrl-body');
+  if (!state.ctrl.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--ds-ink-muted); font-style:italic;">Brak wpisów.</td></tr>'; updateCtrlFoot(); return; }
+  tbody.innerHTML = state.ctrl.map((row, idx) => {
+    const total = (row.amount||0) + (row.extraAmount||0);
+    return `<tr><td class="col-lp">${idx+1}</td><td class="col-name"><select data-ctrl-resident="${row.id}"><option value="">— wybierz —</option>${state.residents.filter(r=>r.status==='active').sort((a,b)=>fullNameLF(a).localeCompare(fullNameLF(b),'pl')).map(r=>`<option value="${r.id}" ${r.id===row.residentId?'selected':''}>${escapeHtml(fullNameLF(r))}</option>`).join('')}</select></td><td><select data-ctrl-pay="${row.id}"><option value="przelew" ${row.payForm==='przelew'?'selected':''}>przelew</option><option value="gotówka" ${row.payForm==='gotówka'?'selected':''}>gotówka</option><option value="karta" ${row.payForm==='karta'?'selected':''}>karta</option><option value="BLIK" ${row.payForm==='BLIK'?'selected':''}>BLIK</option></select></td><td><input type="number" min="1" max="31" data-ctrl-field="payDay" data-cid="${row.id}" value="${row.payDay||''}" style="text-align:center;" /></td><td><input type="text" data-ctrl-field="amount" data-cid="${row.id}" value="${row.amount||''}" placeholder="0,00" style="text-align:right;" /></td><td><input type="text" data-ctrl-field="extraDesc" data-cid="${row.id}" value="${escapeHtml(row.extraDesc||'')}" placeholder="np. Wielkanoc..." /></td><td><input type="text" data-ctrl-field="extraAmount" data-cid="${row.id}" value="${row.extraAmount||''}" placeholder="0,00" style="text-align:right;" /></td><td class="cell-total" data-cell="rowtotal">${fmtPln(total)}</td><td><button class="rm-btn" data-rm-ctrl="${row.id}"><i class="ti ti-x" style="font-size:13px;" aria-hidden="true"></i></button></td></tr>`;
+  }).join('');
+  tbody.querySelectorAll('select[data-ctrl-resident]').forEach(s => s.onchange = () => { const row=state.ctrl.find(r=>r.id===s.dataset.ctrlResident); if (row) { row.residentId=parseInt(s.value)||null; saveState(); } });
+  tbody.querySelectorAll('select[data-ctrl-pay]').forEach(s => s.onchange = () => { const row=state.ctrl.find(r=>r.id===s.dataset.ctrlPay); if (row) { row.payForm=s.value; saveState(); } });
+  tbody.querySelectorAll('input[data-ctrl-field]').forEach(inp => {
+    inp.oninput = () => {
+      const row = state.ctrl.find(r=>r.id===inp.dataset.cid); if (!row) return;
+      const field = inp.dataset.ctrlField;
+      if (field==='amount'||field==='extraAmount') row[field]=parseNum(inp.value);
+      else if (field==='payDay') row[field]=parseInt(inp.value)||'';
+      else row[field]=inp.value;
+      const tr = inp.closest('tr');
+      tr.querySelector('[data-cell="rowtotal"]').textContent = fmtPln((row.amount||0)+(row.extraAmount||0));
+      updateCtrlFoot();
+    };
+    inp.onblur = () => { saveState(); };
+  });
+  tbody.querySelectorAll('[data-rm-ctrl]').forEach(b => b.onclick = () => { if (!confirm('Usunąć?')) return; state.ctrl=state.ctrl.filter(r=>r.id!==b.dataset.rmCtrl); saveState(); renderControlling(); });
+  updateCtrlFoot();
+}
+function updateCtrlFoot() {
+  const base = state.ctrl.reduce((s,r)=>s+(r.amount||0),0);
+  const extra = state.ctrl.reduce((s,r)=>s+(r.extraAmount||0),0);
+  document.getElementById('ctrl-foot-base').textContent = fmtPln(base);
+  document.getElementById('ctrl-foot-extra').textContent = fmtPln(extra);
+  document.getElementById('ctrl-foot-total').textContent = fmtPln(base+extra);
+  document.getElementById('ctrl-count').textContent = state.ctrl.length;
+  document.getElementById('ctrl-base').innerHTML = Math.round(base).toLocaleString('pl-PL')+'<small>zł</small>';
+  document.getElementById('ctrl-extra').innerHTML = Math.round(extra).toLocaleString('pl-PL')+'<small>zł</small>';
+  document.getElementById('ctrl-total').innerHTML = Math.round(base+extra).toLocaleString('pl-PL')+'<small>zł</small>';
+}
+
+// ==================== GRAFIKI ====================
+function renderGrafiki() {
+  const year = parseInt(document.getElementById('gr-year').value);
+  const grid = document.getElementById('grafiki-grid');
+  const cats = [{key:'all',label:'Wszyscy',cls:'all'},{key:'uop',label:'Umowy o pracę',cls:'uop'},{key:'uz',label:'Zleceniobiorcy',cls:'uz'}];
+  const months = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+  grid.innerHTML = cats.map(cat => {
+    const file = state.grafiki.find(g => g.year===year && g.category===cat.key);
+    if (file) {
+      return `<div class="grafik-card"><div class="grafik-year serif">${year}</div><span class="grafik-cat ${cat.cls}">${cat.label}</span><div class="grafik-months">${months.map(m=>`<div class="grafik-month">${m}</div>`).join('')}</div><div class="grafik-file"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i><div style="flex:1; min-width:0;"><div class="grafik-file-name">${escapeHtml(file.fileName)}</div><div class="grafik-file-size">${escapeHtml(file.fileSize||'')}</div></div><button class="rm-btn" data-rm-gr="${file.id}"><i class="ti ti-x" style="font-size:13px;" aria-hidden="true"></i></button></div></div>`;
+    }
+    return `<div class="grafik-card empty-slot" data-add-gr="${year}|${cat.key}"><div class="grafik-year serif" style="color:var(--ds-ink-muted);">${year}</div><span class="grafik-cat ${cat.cls}">${cat.label}</span><div class="grafik-months">${months.map(m=>`<div class="grafik-month">${m}</div>`).join('')}</div><div style="text-align:center; margin-top:16px; color:var(--ds-ink-muted); font-size:13px;"><i class="ti ti-upload" style="font-size:18px; display:block; margin-bottom:4px;" aria-hidden="true"></i>Wgraj grafik</div></div>`;
+  }).join('');
+  grid.querySelectorAll('[data-add-gr]').forEach(c => c.onclick = () => {
+    const [y, cat] = c.dataset.addGr.split('|');
+    const catName = cats.find(x=>x.key===cat).label;
+    state.grafiki.push({id:uid(),year:parseInt(y),category:cat,fileName:`Grafik_${y}_${cat}.xlsx`,fileSize:(100+Math.floor(Math.random()*100))+' KB'});
+    saveState(); renderGrafiki();
+  });
+  grid.querySelectorAll('[data-rm-gr]').forEach(b => b.onclick = (e) => {
+    e.stopPropagation();
+    if (!confirm('Usunąć grafik?')) return;
+    state.grafiki = state.grafiki.filter(g=>g.id!==b.dataset.rmGr);
+    saveState(); renderGrafiki();
+  });
+}
+
+// ==================== WZORY ====================
+let wzFilter = 'all';
+let editingWzorId = null;
+function renderWzory() {
+  const q = (document.getElementById('search-wzory').value||'').toLowerCase();
+  const grid = document.getElementById('wzory-grid');
+  let filtered = state.wzory;
+  if (wzFilter!=='all') filtered = filtered.filter(w => w.category===wzFilter);
+  if (q) filtered = filtered.filter(w => (w.name+' '+(w.desc||'')+' '+(w.tags||'')).toLowerCase().includes(q));
+  filtered.sort((a,b)=>(a.name||'').localeCompare(b.name||'','pl'));
+  if (!filtered.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><i class="ti ti-files-off" aria-hidden="true"></i><p>Brak wzorów.</p></div>'; return; }
+  const catLabels = {kadry:'Kadrowe',mieszkancy:'Mieszkańcy',medyczne:'Medyczne',operacyjne:'Operacyjne',sanepid:'Sanepid/HACCP',bhp:'BHP/PPOŻ'};
+  grid.innerHTML = filtered.map(w => {
+    const iconCls = w.format==='xlsx'?'xls':w.format==='pdf'?'pdf':'doc';
+    const iconName = w.format==='xlsx'?'file-spreadsheet':w.format==='pdf'?'file-text':'file-description';
+    return `<div class="wzor-card" data-edit-wz="${w.id}"><div class="wzor-icon ${iconCls}"><i class="ti ti-${iconName}" aria-hidden="true"></i></div><div class="wzor-name">${escapeHtml(w.name)}</div>${w.desc?`<div class="wzor-desc">${escapeHtml(w.desc)}</div>`:''}<span class="wzor-cat">${catLabels[w.category]||w.category}</span></div>`;
+  }).join('');
+  grid.querySelectorAll('[data-edit-wz]').forEach(c => c.onclick = () => openEditWzor(c.dataset.editWz));
+}
+function openNewWzor() {
+  editingWzorId = null;
+  document.getElementById('wzor-modal-title').textContent='Dodaj wzór';
+  ['wz-name','wz-desc','wz-tags'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('wz-cat').value='kadry';
+  document.getElementById('wz-fmt').value='docx';
+  document.getElementById('wz-delete').style.display='none';
+  document.getElementById('wz-err').textContent='';
+  showModal('modal-wzor');
+}
+function openEditWzor(id) {
+  editingWzorId = id;
+  const w = state.wzory.find(x=>x.id===id); if (!w) return;
+  document.getElementById('wzor-modal-title').textContent='Edytuj wzór';
+  document.getElementById('wz-name').value=w.name||'';
+  document.getElementById('wz-cat').value=w.category||'kadry';
+  document.getElementById('wz-fmt').value=w.format||'docx';
+  document.getElementById('wz-desc').value=w.desc||'';
+  document.getElementById('wz-tags').value=w.tags||'';
+  document.getElementById('wz-delete').style.display='inline-flex';
+  document.getElementById('wz-err').textContent='';
+  showModal('modal-wzor');
+}
+function saveWzor() {
+  const name = document.getElementById('wz-name').value.trim();
+  if (!name) { document.getElementById('wz-err').textContent='Podaj nazwę.'; return; }
+  const data = {name,category:document.getElementById('wz-cat').value,format:document.getElementById('wz-fmt').value,desc:document.getElementById('wz-desc').value.trim(),tags:document.getElementById('wz-tags').value.trim()};
+  if (editingWzorId) Object.assign(state.wzory.find(x=>x.id===editingWzorId), data);
+  else state.wzory.push({id:uid(),...data});
+  saveState(); hideModal('modal-wzor'); renderWzory();
+}
+function deleteWzor() {
+  if (!editingWzorId) return;
+  if (!confirm('Usunąć wzór?')) return;
+  state.wzory = state.wzory.filter(w=>w.id!==editingWzorId);
+  saveState(); hideModal('modal-wzor'); renderWzory();
+}
+
+
+// ==================== ALARM POPUP (po zalogowaniu) ====================
+function getAllAlarms() {
+  const reminders = state.events.map(e => ({...e, _days: daysDiff(e.date), _kind:'event'})).filter(e => e._days>=0 && e._days<=7);
+  const alarmsByResident = [];
+  state.residents.filter(r=>r.status==='active').forEach(r => {
+    const alerts = [];
+    (state.meds[r.id]||[]).forEach(m => { const info=medInfo(m); const lvl=alertLevel(info.daysLeft,info.currentToday); if (lvl==='red'||lvl==='amber') alerts.push({kind:'lek',level:lvl,name:m.name,daysLeft:info.daysLeft,current:info.currentToday}); });
+    (state.magazyn[r.id]||[]).forEach(it => { const info=magInfo(it); const lvl=alertLevel(info.daysLeft,info.currentToday); if (lvl==='red'||lvl==='amber') alerts.push({kind:'mag',level:lvl,name:it.name,daysLeft:info.daysLeft,current:info.currentToday}); });
+    if (alerts.length) { const topLevel = alerts.some(a=>a.level==='red')?'red':'amber'; alarmsByResident.push({resident:r,alerts,topLevel}); }
+  });
+  alarmsByResident.sort((a,b)=> a.topLevel!==b.topLevel ? (a.topLevel==='red'?-1:1) : fullNameLF(a.resident).localeCompare(fullNameLF(b.resident),'pl'));
+  return {reminders, alarmsByResident};
+}
+function renderAlarmPopup() {
+  const {reminders, alarmsByResident} = getAllAlarms();
+  const body = document.getElementById('alarm-body');
+  const counter = document.getElementById('alarm-counter');
+  const header = document.getElementById('alarm-header');
+  const title = document.getElementById('alarm-title');
+  const sub = document.getElementById('alarm-sub');
+  const today = todayISO();
+  const totalCount = reminders.length + alarmsByResident.length;
+  if (!totalCount) {
+    header.className='alarm-header green';
+    title.textContent='Wszystko w porządku';
+    sub.textContent='Brak pilnych spraw';
+    body.innerHTML = '<div style="text-align:center; padding:2rem 1rem;"><i class="ti ti-circle-check" style="font-size:32px; color:var(--ds-bottle); display:block; margin-bottom:8px;" aria-hidden="true"></i><p style="margin:0; font-weight:500;">Brak przypomnień i alarmów.</p><p style="font-size:12px; margin:4px 0 0; color:var(--ds-ink-muted);">Spokojnego dnia.</p></div>';
+    counter.innerHTML = '';
+    return;
+  }
+  const anyRed = alarmsByResident.some(a=>a.topLevel==='red');
+  const anyEventToday = reminders.some(r=>r._days===0);
+  if (anyRed || anyEventToday) header.className='alarm-header';
+  else if (alarmsByResident.length) header.className='alarm-header amber';
+  else header.className='alarm-header gold';
+  title.textContent = anyRed ? 'Uwaga — kończą się leki / produkty' : reminders.length ? 'Przypomnienia kalendarza' : 'Do uzupełnienia';
+  sub.textContent = 'Odhacz po sprawdzeniu';
+  let html = '';
+  if (alarmsByResident.length) {
+    html += '<div style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ds-ink-muted); margin-bottom:8px; font-weight:500;">Leki i magazyn</div>';
+    alarmsByResident.forEach(a => {
+      const dkey = 'alarm_'+a.resident.id;
+      const done = state.dismissedAlarm[dkey]===today;
+      const msg = a.alerts.length===1 ? `${a.alerts[0].kind==='lek'?'Sprawdź lek':'Sprawdź zapas'}: ${a.alerts[0].name}` : `Sprawdź ${a.alerts.length} ${a.alerts.length<5?'pozycje':'pozycji'}`;
+      const items = a.alerts.length>1 ? `<ul class="alarm-list-items">${a.alerts.map(x => { const lvlText = x.current===0?'BRAK':x.daysLeft+' dni'; const c = x.level==='red'?'color:var(--ds-danger); font-weight:600;':'color:var(--ds-warn);'; return `<li>${escapeHtml(x.name)} <span style="${c}">(${lvlText})</span></li>`; }).join('')}</ul>` : (() => { const x=a.alerts[0]; const t=x.current===0?'BRAK — natychmiast uzupełnić!':'zostało '+x.daysLeft+' dni'; return `<p style="margin:4px 0 0; font-size:12px; ${x.level==='red'?'color:var(--ds-danger); font-weight:500;':'color:var(--ds-warn);'}">${t}</p>`; })();
+      html += `<div class="alarm-item ${a.topLevel}"><button class="alarm-check ${done?'done':''}" data-dismiss-alarm="${dkey}"><i class="ti ti-check" style="font-size:14px;" aria-hidden="true"></i></button><div class="alarm-content"><div class="alarm-resident ${done?'done':''}">${escapeHtml(fullName(a.resident))}</div><p class="alarm-message ${a.topLevel}">${escapeHtml(msg)}</p>${items}</div></div>`;
+    });
+  }
+  if (reminders.length) {
+    if (alarmsByResident.length) html += '<div style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ds-ink-muted); margin:16px 0 8px; font-weight:500;">Kalendarz — najbliższe 7 dni</div>';
+    reminders.sort((a,b)=>a._days-b._days || (a.time||'').localeCompare(b.time||''));
+    reminders.forEach(e => {
+      const u = urgencyBorder(e._days);
+      const uText = u==='urgent'?'urgent':u==='warn'?'warn':u==='soon'?'soon':'ok';
+      const when = fmtRelative(e._days)+(e.time?' · '+e.time:'');
+      const r = e.residentId ? state.residents.find(x=>x.id===e.residentId) : null;
+      const dkey = 'event_'+e.id;
+      const done = state.dismissed[dkey]===today;
+      html += `<div class="alarm-item ${u==='urgent'?'red':u==='warn'?'amber':''}"><button class="alarm-check ${done?'done':''}" data-dismiss-event="${dkey}"><i class="ti ti-check" style="font-size:14px;" aria-hidden="true"></i></button><div class="alarm-content"><p class="alarm-when ${uText}">${when}</p><p class="alarm-text ${done?'done':''}">${escapeHtml(e.title)}</p><p class="alarm-meta">${typeLabel(e.type)}${r?' · '+escapeHtml(fullName(r)):''}</p></div></div>`;
+    });
+  }
+  body.innerHTML = html;
+  const remaining = alarmsByResident.filter(a => state.dismissedAlarm['alarm_'+a.resident.id]!==today).length + reminders.filter(e => state.dismissed['event_'+e.id]!==today).length;
+  counter.innerHTML = `<strong>${remaining}</strong> z ${totalCount} do potwierdzenia`;
+  body.querySelectorAll('[data-dismiss-alarm]').forEach(b => b.onclick = () => { const k=b.dataset.dismissAlarm; if (state.dismissedAlarm[k]===today) delete state.dismissedAlarm[k]; else state.dismissedAlarm[k]=today; saveState(); renderAlarmPopup(); });
+  body.querySelectorAll('[data-dismiss-event]').forEach(b => b.onclick = () => { const k=b.dataset.dismissEvent; if (state.dismissed[k]===today) delete state.dismissed[k]; else state.dismissed[k]=today; saveState(); renderAlarmPopup(); });
+}
+
+// ==================== FAKTURY (BATCH UPLOAD - symulacja) ====================
+let invoiceStep = 0;
+let uploadedFiles = [];
+let analyzedInvoices = [];
+let batchFilter = 'all';
+const PIELUCHY_PER_OPK = 30;
+
+function openInvoiceModal() {
+  invoiceStep=0; uploadedFiles=[]; analyzedInvoices=[]; batchFilter='all';
+  renderInvoiceStep();
+  showModal('invoice-modal');
+}
+function renderInvoiceStep() {
+  const body = document.getElementById('invoice-body');
+  const footer = document.getElementById('invoice-footer');
+  const title = document.getElementById('invoice-title');
+  const sub = document.getElementById('invoice-subtitle');
+  if (invoiceStep===0) {
+    title.textContent='Wgraj faktury';
+    sub.textContent='Wybierz jedną lub wiele naraz';
+    body.innerHTML = `<div class="drop-zone"><i class="ti ti-cloud-upload main" aria-hidden="true"></i><p class="title">Kliknij lub przeciągnij pliki</p><p class="sub">PDF, JPG, PNG · wiele plików naraz (Ctrl+klik) · do 10 MB każdy</p><input type="file" id="invoice-files" accept=".pdf,.jpg,.jpeg,.png" multiple /></div><div class="drop-helper"><i class="ti ti-bolt" aria-hidden="true"></i><div><strong>AI rozpoznaje:</strong><br>• leki → moduł <strong>Leki</strong><br>• pieluchy/podkłady/pianka → moduł <strong>Magazyn</strong> (1 OPK = 30 szt., auto)<br>• dopasuje nazwiska do mieszkańców<br>• <em>nieznane nazwiska oznaczę pomarańczowo</em><br><span style="display:inline-block; margin-top:6px; padding:4px 8px; background:rgba(176,138,75,0.15); border-radius:4px; font-size:11px;">Demo: AI symuluje czytanie. W wersji produkcyjnej — prawdziwy OCR.</span></div></div>`;
+    footer.innerHTML = `<div></div><button id="cancel-inv-btn" class="btn-ghost">Anuluj</button>`;
+    document.getElementById('invoice-files').onchange = (e) => { if (e.target.files.length) { uploadedFiles=Array.from(e.target.files); invoiceStep=1; renderInvoiceStep(); simulateBatchAnalysis(); } };
+    document.getElementById('cancel-inv-btn').onclick = () => hideModal('invoice-modal');
+  }
+  else if (invoiceStep===1) {
+    title.textContent='Analizuję faktury';
+    sub.textContent=`${uploadedFiles.length} ${uploadedFiles.length===1?'plik':'plików'}`;
+    body.innerHTML = `<div class="progress"><p class="progress-title">AI odczytuje faktury</p><p class="progress-sub">Identyfikuję mieszkańców, produkty, ilości</p><div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%;"></div></div><p class="progress-count" id="progress-count">0 / ${uploadedFiles.length}</p><ul class="progress-list" id="progress-list">${uploadedFiles.map((f,i)=>`<li class="pending" data-prog="${i}"><i class="ti ti-file" aria-hidden="true"></i><span class="file-name">${escapeHtml(f.name)}</span><span class="file-status">czeka</span></li>`).join('')}</ul></div>`;
+    footer.innerHTML = '';
+  }
+  else if (invoiceStep===2) {
+    title.textContent='Potwierdź dane';
+    sub.textContent=`${analyzedInvoices.length} faktur · ${countPositions()} pozycji`;
+    const grouped = groupByResident();
+    const unmatched = grouped.filter(g => !g.matchedId).length;
+    const matched = grouped.length - unmatched;
+    const lekiCnt = analyzedInvoices.reduce((s,inv)=>s+inv.entries.reduce((ss,e)=>ss+e.products.filter(p=>p.targetModule==='leki').length,0),0);
+    const magCnt = analyzedInvoices.reduce((s,inv)=>s+inv.entries.reduce((ss,e)=>ss+e.products.filter(p=>p.targetModule==='magazyn').length,0),0);
+    let html = `<div class="batch-summary"><div class="batch-stat"><span class="batch-stat-label">Faktur</span><span class="batch-stat-value">${analyzedInvoices.length}</span></div><div class="batch-stat"><span class="batch-stat-label">Mieszkańców</span><span class="batch-stat-value bottle">${grouped.length}</span></div><div class="batch-stat"><span class="batch-stat-label">Leki</span><span class="batch-stat-value">${lekiCnt}</span></div><div class="batch-stat"><span class="batch-stat-label">Magazyn</span><span class="batch-stat-value">${magCnt}</span></div>${unmatched?`<div class="batch-stat"><span class="batch-stat-label">Niedopasowane</span><span class="batch-stat-value warn">${unmatched}</span></div>`:''}</div><div class="filter-bar"><button class="filter-chip ${batchFilter==='all'?'active':''}" data-batch-filter="all">Wszyscy ${grouped.length}</button><button class="filter-chip ${batchFilter==='matched'?'active':''}" data-batch-filter="matched">Dopasowani ${matched}</button>${unmatched?`<button class="filter-chip ${batchFilter==='unmatched'?'active':''}" data-batch-filter="unmatched"><i class="ti ti-alert-triangle" style="font-size:11px;" aria-hidden="true"></i>Wymagają dopasowania ${unmatched}</button>`:''}</div>`;
+    const filtered = grouped.filter(g => batchFilter==='matched'?!!g.matchedId:batchFilter==='unmatched'?!g.matchedId:true);
+    filtered.forEach(g => {
+      const matchedRes = g.matchedId ? state.residents.find(r=>r.id===g.matchedId) : null;
+      html += `<div class="batch-card ${matchedRes?'matched':'unmatched'}"><div class="batch-card-head"><div class="avatar-sm"${!matchedRes?' style="background:var(--ds-warn);"':''}>${matchedRes?escapeHtml(initials(matchedRes)):'?'}</div><div class="batch-card-name"><p class="title">${matchedRes?escapeHtml(fullName(matchedRes)):escapeHtml(g.invoiceName)}</p><p class="sub">${matchedRes?'pokój '+escapeHtml(matchedRes.room)+' · z faktury: '+escapeHtml(g.invoiceName):'nie znaleziono w bazie'}</p></div></div><div class="batch-card-products">${g.products.map(p=>`<div class="batch-product"><div class="batch-product-icon ${p.targetModule==='leki'?'leki':'mag'}">${p.targetModule==='leki'?'L':'M'}</div><div class="batch-product-name">${escapeHtml(p.name)}<div class="batch-product-detail">${p.opkCount&&p.perOpk?p.opkCount+' opk × '+p.perOpk+' szt.':''} · faktura ${escapeHtml(p.invoiceNumber||'')}</div></div><div class="batch-product-qty">${p.totalQty}<small>szt.</small></div></div>`).join('')}</div>${!matchedRes?`<div class="batch-match"><span class="batch-match-label">Dopasuj do:</span><select data-match-key="${g.key}"><option value="">— wybierz —</option>${state.residents.filter(r=>r.status==='active').sort((a,b)=>fullNameLF(a).localeCompare(fullNameLF(b),'pl')).map(r=>`<option value="${r.id}">${escapeHtml(fullName(r))} (pokój ${escapeHtml(r.room)})</option>`).join('')}</select></div>`:''}</div>`;
+    });
+    body.innerHTML = html;
+    body.querySelectorAll('[data-batch-filter]').forEach(b => b.onclick = () => { batchFilter=b.dataset.batchFilter; renderInvoiceStep(); });
+    body.querySelectorAll('[data-match-key]').forEach(sel => sel.onchange = (e) => {
+      const key = e.target.dataset.matchKey;
+      const id = parseInt(e.target.value)||null;
+      analyzedInvoices.forEach(inv => inv.entries.forEach(en => { if (en._groupKey===key) en._matchedId=id; }));
+      if (id) setTimeout(()=>renderInvoiceStep(), 200);
+    });
+    const allMatched = grouped.every(g => g.matchedId);
+    footer.innerHTML = `<div style="font-size:12px; color:var(--ds-ink-soft);">${allMatched?'<span style="color:var(--ds-bottle);"><i class="ti ti-check" aria-hidden="true"></i> Wszystko gotowe</span>':`<span style="color:var(--ds-warn);"><i class="ti ti-alert-triangle" aria-hidden="true"></i> ${unmatched} do dopasowania</span>`}</div><div style="display:flex; gap:10px;"><button id="cancel-inv-btn" class="btn-ghost">Anuluj</button><button id="save-all-btn" class="btn-accent" ${!allMatched?'disabled style="opacity:0.4; cursor:not-allowed;"':''}><i class="ti ti-check" style="font-size:16px;" aria-hidden="true"></i>Zapisz wszystko (${grouped.length})</button></div>`;
+    document.getElementById('cancel-inv-btn').onclick = () => hideModal('invoice-modal');
+    if (allMatched) document.getElementById('save-all-btn').onclick = () => { saveAllInvoices(); invoiceStep=3; renderInvoiceStep(); };
+  }
+  else if (invoiceStep===3) {
+    title.textContent='Zapisano';
+    sub.textContent='Dane wpisane do aplikacji';
+    const grouped = groupByResident();
+    const lekiCnt = analyzedInvoices.reduce((s,inv)=>s+inv.entries.reduce((ss,e)=>ss+e.products.filter(p=>p.targetModule==='leki').length,0),0);
+    const magCnt = analyzedInvoices.reduce((s,inv)=>s+inv.entries.reduce((ss,e)=>ss+e.products.filter(p=>p.targetModule==='magazyn').length,0),0);
+    body.innerHTML = `<div class="success-screen"><div class="success-icon"><i class="ti ti-check" style="font-size:32px;" aria-hidden="true"></i></div><h3 class="success-title">Wszystko zapisane</h3><p class="success-sub">Stan magazynu / leków zaktualizowany automatycznie</p><div class="success-stats"><div class="success-stat"><div class="success-stat-num">${analyzedInvoices.length}</div><div class="success-stat-lbl">Faktury</div></div><div class="success-stat"><div class="success-stat-num">${grouped.length}</div><div class="success-stat-lbl">Mieszkańców</div></div><div class="success-stat"><div class="success-stat-num">${lekiCnt}</div><div class="success-stat-lbl">Leki</div></div><div class="success-stat"><div class="success-stat-num">${magCnt}</div><div class="success-stat-lbl">Magazyn</div></div></div></div>`;
+    footer.innerHTML = `<div></div><button id="done-inv-btn" class="btn-primary">Zamknij</button>`;
+    document.getElementById('done-inv-btn').onclick = () => { hideModal('invoice-modal'); renderLeki(); renderMag(); };
+  }
+}
+function countPositions() { return analyzedInvoices.reduce((s,inv)=>s+inv.entries.reduce((ss,e)=>ss+e.products.length,0),0); }
+function groupByResident() {
+  const map = new Map();
+  analyzedInvoices.forEach(inv => {
+    inv.entries.forEach(en => {
+      const key = en._groupKey || (en._groupKey = normalize(en.residentName));
+      if (!map.has(key)) {
+        const m = findResidentMatch(en.residentName);
+        if (m) en._matchedId = m.id;
+        map.set(key, {key, invoiceName:en.residentName, matchedId:en._matchedId||null, products:[]});
+      }
+      en.products.forEach(p => map.get(key).products.push({...p, invoiceNumber:inv.number, invoiceDate:inv.date}));
+      if (en._matchedId && !map.get(key).matchedId) map.get(key).matchedId = en._matchedId;
+      const gm = map.get(key).matchedId;
+      if (gm) en._matchedId = gm;
+    });
+  });
+  return Array.from(map.values()).sort((a,b)=> !!a.matchedId===!!b.matchedId ? a.invoiceName.localeCompare(b.invoiceName,'pl') : a.matchedId?1:-1);
+}
+async function simulateBatchAnalysis() {
+  analyzedInvoices = [];
+  const variants = [
+    {supplier:'FARMPOL',name:'WALTER KRYSTYNA',products:[{name:'Pieluchomajtki SENI SUPER PLUS L',rawDesc:'SENI SUPER PLUS L30 (1 OPK)',opkCount:1,perOpk:30,totalQty:30,targetModule:'magazyn',targetKey:'pieluchy'}]},
+    {supplier:'FARMPOL',name:'MALINOWSKA BRONISŁAWA',products:[{name:'Pieluchomajtki SENI SUPER PLUS M',rawDesc:'SENI SUPER PLUS M30 (1 OPK)',opkCount:1,perOpk:30,totalQty:30,targetModule:'magazyn',targetKey:'pieluchy'}]},
+    {supplier:'FARMPOL',name:'KOWALSKA ANNA',products:[{name:'Pieluchomajtki SENI SUPER PLUS M',rawDesc:'SENI SUPER PLUS M30 (2 OPK)',opkCount:2,perOpk:30,totalQty:60,targetModule:'magazyn',targetKey:'pieluchy'},{name:'Podkłady chłonne SENI SOFT 60×90',rawDesc:'SENI SOFT 60x90 (1 OPK=30szt)',opkCount:1,perOpk:30,totalQty:30,targetModule:'magazyn',targetKey:'podklady'}]},
+    {supplier:'ROKO',name:'LEWANDOWSKI STANISŁAW',products:[{name:'Pieluchomajtki TENA Slip L',rawDesc:'TENA Slip Plus L30 (4 OPK)',opkCount:4,perOpk:30,totalQty:120,targetModule:'magazyn',targetKey:'pieluchy'},{name:'Pianka do mycia SENI Care',rawDesc:'SENI Care pianka 500ml (3 op)',opkCount:3,perOpk:1,totalQty:3,targetModule:'magazyn',targetKey:'pianka'}]},
+    {supplier:'Apteka DOZ',name:'NOWAK JANUSZ',products:[{name:'Polopiryna S 300mg',rawDesc:'tabl. 30szt',totalQty:30,targetModule:'leki',dose:'1-0-1'},{name:'Memotropil 800mg',rawDesc:'tabl. 60szt (2 op)',totalQty:120,targetModule:'leki',dose:'1-1-1'}]},
+    {supplier:'Apteka Salus',name:'KODŁUBAŃSKA MARIA',products:[{name:'Tritico CR 150mg',rawDesc:'tabl. 30szt (2 op)',totalQty:60,targetModule:'leki',dose:'0-0-1'},{name:'Acard 75mg',rawDesc:'tabl. 60szt',totalQty:60,targetModule:'leki',dose:'0-1-0'}]},
+    {supplier:'FARMPOL',name:'GÓRNY RYSZARD',products:[{name:'Pieluchomajtki SENI SUPER PLUS L',rawDesc:'SENI SUPER PLUS L30 (3 OPK)',opkCount:3,perOpk:30,totalQty:90,targetModule:'magazyn',targetKey:'pieluchy'}]},
+    {supplier:'FARMPOL',name:'WIŚNIOWSKA HALINA',products:[{name:'Podkłady chłonne SENI SOFT',rawDesc:'SENI SOFT (1 OPK)',opkCount:1,perOpk:30,totalQty:30,targetModule:'magazyn',targetKey:'podklady'}]}
+  ];
+  const total = uploadedFiles.length;
+  for (let i=0; i<total; i++) {
+    const v = variants[i % variants.length];
+    await new Promise(r => setTimeout(r, 300+Math.random()*250));
+    analyzedInvoices.push({number:v.supplier.substring(0,4).toUpperCase()+'/'+(10500+i)+'/2026', date:'2026-04-'+String(20+(i%9)).padStart(2,'0'), supplier:v.supplier, entries:[{residentName:v.name, products:[...v.products]}]});
+    const fillEl = document.getElementById('progress-fill');
+    const cntEl = document.getElementById('progress-count');
+    const listEl = document.getElementById('progress-list');
+    if (fillEl) fillEl.style.width = ((i+1)/total*100)+'%';
+    if (cntEl) cntEl.textContent = (i+1)+' / '+total;
+    if (listEl) { const li = listEl.querySelector(`[data-prog="${i}"]`); if (li) { li.classList.remove('pending'); li.classList.add('done'); li.querySelector('i').className='ti ti-check'; li.querySelector('.file-status').textContent=v.name; } }
+  }
+  await new Promise(r => setTimeout(r, 300));
+  invoiceStep = 2;
+  renderInvoiceStep();
+}
+function saveAllInvoices() {
+  analyzedInvoices.forEach(inv => {
+    inv.entries.forEach(en => {
+      const rid = en._matchedId; if (!rid) return;
+      recentlyImported.add(rid);
+      en.products.forEach(p => {
+        if (p.targetModule==='magazyn') {
+          ensureFixedMag(rid);
+          const item = state.magazyn[rid].find(x=>x.key===p.targetKey);
+          if (item) {
+            item.baselineStock = p.totalQty;
+            item.baselineDate = inv.date;
+            if (!item.dailyUsage && p.targetKey==='pieluchy') item.dailyUsage = 3;
+            if (!item.dailyUsage && p.targetKey==='podklady') item.dailyUsage = 2;
+            if (!item.dailyUsage && p.targetKey==='pianka') item.dailyUsage = 0.05;
+          }
+        } else if (p.targetModule==='leki') {
+          state.meds[rid] = state.meds[rid]||[];
+          const existing = state.meds[rid].find(m => normalize(m.name).startsWith(normalize(p.name).split(' ')[0]));
+          if (existing) { existing.baselineStock=p.totalQty; existing.baselineDate=inv.date; if (p.dose && !existing.dose) existing.dose=p.dose; }
+          else state.meds[rid].push({id:uid(), name:p.name, dose:p.dose||'1-0-0', baselineStock:p.totalQty, baselineDate:inv.date});
+        }
+      });
+    });
+  });
+  saveState();
+}
+
+
+// ==================== INIT + EVENT WIRING ====================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display = (p.id === 'tab-' + name) ? 'block' : 'none');
+  if (name === 'mieszkancy') renderMieszkancy();
+  else if (name === 'dokumentacja') renderDokumentacja();
+  else if (name === 'leki') renderLeki();
+  else if (name === 'magazyn') renderMag();
+  else if (name === 'kalendarz') renderEvents();
+  else if (name === 'controlling') renderControlling();
+  else if (name === 'grafiki') renderGrafiki();
+  else if (name === 'wzory') renderWzory();
+}
+
+function bindAll() {
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchTab(t.dataset.tab));
+
+  // Filtry chips
+  document.querySelectorAll('[data-mz-filter]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('[data-mz-filter]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    mzFilter = b.dataset.mzFilter;
+    renderMieszkancy();
+  });
+  document.querySelectorAll('[data-cal-filter]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('[data-cal-filter]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    calFilter = b.dataset.calFilter;
+    renderEvents();
+  });
+  document.querySelectorAll('[data-wz-cat]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('[data-wz-cat]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    wzFilter = b.dataset.wzCat;
+    renderWzory();
+  });
+
+  // Wyszukiwarki
+  document.getElementById('search-mz').oninput = renderMieszkancy;
+  document.getElementById('search-dok').oninput = renderDokumentacja;
+  document.getElementById('search-leki').oninput = renderLeki;
+  document.getElementById('search-mag').oninput = renderMag;
+  document.getElementById('search-cal').oninput = renderEvents;
+  document.getElementById('search-wzory').oninput = renderWzory;
+
+  // Mieszkańcy modal
+  document.getElementById('mz-add').onclick = openNewResident;
+  document.getElementById('mz-close').onclick = () => hideModal('modal-resident');
+  document.getElementById('mz-cancel').onclick = () => hideModal('modal-resident');
+  document.getElementById('mz-save').onclick = saveResident;
+  document.getElementById('mz-delete').onclick = deleteResident;
+
+  // Kalendarz modal
+  document.getElementById('add-event-btn').onclick = openNewEvent;
+  document.getElementById('event-close').onclick = () => hideModal('modal-event');
+  document.getElementById('e-cancel').onclick = () => hideModal('modal-event');
+  document.getElementById('e-save').onclick = saveEvent;
+  document.getElementById('e-delete').onclick = deleteEvent;
+
+  // Wzory modal
+  document.getElementById('wzory-add').onclick = openNewWzor;
+  document.getElementById('wzor-close').onclick = () => hideModal('modal-wzor');
+  document.getElementById('wz-cancel').onclick = () => hideModal('modal-wzor');
+  document.getElementById('wz-save').onclick = saveWzor;
+  document.getElementById('wz-delete').onclick = deleteWzor;
+
+  // Controlling
+  document.getElementById('ctrl-add').onclick = () => {
+    state.ctrl.push({ id: uid(), residentId: null, payForm: 'przelew', payDay: 5, amount: 0, extraDesc: '', extraAmount: 0 });
+    saveState();
+    renderControlling();
+  };
+
+  // Grafiki
+  document.getElementById('gr-year').onchange = renderGrafiki;
+
+  // Faktury
+  document.getElementById('upload-invoice-btn').onclick = openInvoiceModal;
+  document.getElementById('invoice-close').onclick = () => hideModal('invoice-modal');
+
+  // Alarm popup
+  document.getElementById('alarm-close').onclick = () => hideModal('alarm-popup');
+
+  // Logout
+  document.getElementById('logout-btn').onclick = () => {
+    document.getElementById('main-app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('login-error').textContent = '';
+    recentlyImported.clear();
+  };
+
+  // Zamykanie modali klikiem w tło
+  ['modal-resident', 'modal-event', 'modal-wzor', 'invoice-modal', 'alarm-popup'].forEach(id => {
+    const el = document.getElementById(id);
+    el.onclick = (e) => { if (e.target === el) hideModal(id); };
+  });
+
+  // Login
+  const pwdInput = document.getElementById('pwd-input');
+  const loginBtn = document.getElementById('login-btn');
+  const loginErr = document.getElementById('login-error');
+  loginBtn.onclick = () => {
+    if (pwdInput.value === '123') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+      // Czysty start sesji — odhaczenia z tej sesji wyzeruj
+      state.dismissed = {};
+      state.dismissedAlarm = {};
+      saveState();
+      fillResidentSelect();
+      renderMieszkancy();
+      // Pokaż alarm popup
+      renderAlarmPopup();
+      setTimeout(() => showModal('alarm-popup'), 300);
+    } else {
+      loginErr.textContent = 'Nieprawidłowe hasło.';
+      pwdInput.value = '';
+    }
+  };
+  pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
+  pwdInput.addEventListener('input', () => { loginErr.textContent = ''; });
+}
+
+// Start
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  bindAll();
+});
+</script>
+</body>
+</html>
