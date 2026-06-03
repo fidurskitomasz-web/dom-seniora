@@ -938,7 +938,66 @@ function renderDokumentacja() {
   });
 }
 
-// ==================== LEKI ====================
+// ==================== LEKI (SUPABASE) ====================
+
+async function loadMeds(residentId) {
+  const { data, error } = await db
+    .from('leki')
+    .select('*')
+    .eq('mieszkaniec_id', residentId)
+    .order('created_at', { ascending: true });
+  if (error) { console.error('Błąd ładowania leków:', error); return []; }
+  const meds = (data||[]).map(m => ({
+    id: m.id,
+    name: m.nazwa||'',
+    dose: m.dawka||'',
+    baselineStock: m.stan_magazynowy!=null ? m.stan_magazynowy : '',
+    baselineDate: m.data_bazowa||'',
+    uwagi: m.uwagi||''
+  }));
+  state.meds[residentId] = meds;
+  return meds;
+}
+
+async function addMed(residentId) {
+  const { data, error } = await db
+    .from('leki')
+    .insert({ mieszkaniec_id: residentId, nazwa: '', dawka: '' })
+    .select()
+    .single();
+  if (error) { console.error('Błąd dodawania leku:', error); return; }
+  if (!state.meds[residentId]) state.meds[residentId] = [];
+  state.meds[residentId].push({
+    id: data.id, name: '', dose: '', baselineStock: '', baselineDate: '', uwagi: ''
+  });
+  renderLeki();
+}
+
+async function saveMedField(medId, residentId, field, value) {
+  const dbField = {name:'nazwa', dose:'dawka', baselineStock:'stan_magazynowy', baselineDate:'data_bazowa', uwagi:'uwagi'}[field];
+  if (!dbField) return;
+  const dbValue = (field==='baselineStock') ? (value===''?null:parseFloat(value)||0) : (value||null);
+  const update = { [dbField]: dbValue };
+  if (field==='baselineStock') update.data_bazowa = todayISO();
+  const { error } = await db.from('leki').update(update).eq('id', medId);
+  if (error) console.error('Błąd zapisu leku:', error);
+  // Odśwież lokalny state
+  const med = (state.meds[residentId]||[]).find(m=>m.id===medId);
+  if (med) {
+    if (field==='baselineStock') { med.baselineStock=value; med.baselineDate=todayISO(); }
+    else med[field]=value;
+  }
+  renderLeki();
+}
+
+async function deleteMed(medId, residentId) {
+  if (!confirm('Usunąć ten lek?')) return;
+  const { error } = await db.from('leki').delete().eq('id', medId);
+  if (error) { alert('Błąd usuwania: '+error.message); return; }
+  state.meds[residentId] = (state.meds[residentId]||[]).filter(m=>m.id!==medId);
+  renderLeki();
+}
+
 function renderLeki() {
   const q = (document.getElementById('search-leki').value||'').toLowerCase();
   const list = document.getElementById('leki-list');
@@ -950,20 +1009,29 @@ function renderLeki() {
     meds.forEach(m=>{ const i=medInfo(m); const lvl=alertLevel(i.daysLeft,i.currentToday); if (lvl==='red') red++; else if (lvl==='amber') amber++; });
     const fresh = recentlyImported.has(r.id);
     let alertHtml = fresh ? `<span class="resident-head-alert alert-fresh"><i class="ti ti-check" style="font-size:11px;" aria-hidden="true"></i>Wpisano z faktury</span>` : red ? `<span class="resident-head-alert alert-red"><i class="ti ti-alert-triangle" style="font-size:11px;" aria-hidden="true"></i>${red} ${red===1?'lek się kończy':'leków się kończy'}</span>` : amber ? `<span class="resident-head-alert alert-amber"><i class="ti ti-clock" style="font-size:11px;" aria-hidden="true"></i>${amber} do uzupełnienia</span>` : meds.length ? `<span class="resident-head-alert alert-green"><i class="ti ti-check" style="font-size:11px;" aria-hidden="true"></i>Stan OK</span>` : '';
+    const loaded = Array.isArray(state.meds[r.id]);
     return `<div class="resident-block"><div class="resident-head" data-toggle-leki="${r.id}"><div class="avatar-sm">${escapeHtml(initials(r))}</div><div class="resident-head-main"><p class="resident-head-name">${escapeHtml(fullName(r))}</p><p class="resident-head-meta">Pokój ${escapeHtml(r.room||'—')} • ${meds.length} ${meds.length===1?'lek':'leków'}</p></div>${alertHtml}<i class="ti ti-chevron-down chev" data-chev-leki="${r.id}" style="font-size:18px; transform:rotate(180deg);" aria-hidden="true"></i></div><div class="tab-wrap" data-body-leki="${r.id}"><table class="tab-tbl"><thead><tr><th style="min-width:180px;">Nazwa leku</th><th style="width:100px;">Dawka</th><th style="width:90px; text-align:right;">Dz. dawka</th><th style="width:170px;">Stan (dziś)</th><th style="width:100px; text-align:right;">Starczy</th><th style="width:130px;">Koniec</th><th style="width:36px;"></th></tr></thead><tbody>${meds.map(m=>renderMedRow(r.id,m)).join('')}${meds.length===0?'<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--ds-ink-muted); font-style:italic; font-size:12px;">Brak leków.</td></tr>':''}</tbody></table><div class="tab-add-row"><button class="btn-ghost" data-add-med="${r.id}"><i class="ti ti-plus" style="font-size:13px;" aria-hidden="true"></i>Dodaj lek</button></div></div></div>`;
   }).join('');
-  list.querySelectorAll('[data-toggle-leki]').forEach(el => el.onclick = (e) => { if (e.target.closest('input,button')) return; const rid=el.dataset.toggleLeki; const body=list.querySelector(`[data-body-leki="${rid}"]`); const chev=list.querySelector(`[data-chev-leki="${rid}"]`); const open=body.style.display!=='none'; body.style.display=open?'none':'block'; chev.style.transform=open?'rotate(0deg)':'rotate(180deg)'; });
-  list.querySelectorAll('[data-add-med]').forEach(b => b.onclick = () => { const rid=parseInt(b.dataset.addMed); state.meds[rid]=state.meds[rid]||[]; state.meds[rid].push({id:uid(),name:'',dose:'',baselineStock:'',baselineDate:''}); saveState(); renderLeki(); });
-  list.querySelectorAll('input[data-med-field]').forEach(inp => {
-    inp.oninput = () => {
-      const rid=parseInt(inp.dataset.rid); const mid=inp.dataset.mid; const field=inp.dataset.medField;
-      const med=state.meds[rid].find(m=>m.id===mid); if (!med) return;
-      if (field==='stockToday') { med.baselineStock=inp.value; med.baselineDate=todayISO(); }
-      else med[field]=inp.value;
-    };
-    inp.onblur = () => { saveState(); renderLeki(); };
+  list.querySelectorAll('[data-toggle-leki]').forEach(el => el.onclick = async (e) => {
+    if (e.target.closest('input,button')) return;
+    const rid = el.dataset.toggleLeki;
+    const body = list.querySelector(`[data-body-leki="${rid}"]`);
+    const chev = list.querySelector(`[data-chev-leki="${rid}"]`);
+    const open = body.style.display !== 'none';
+    if (!open && !Array.isArray(state.meds[rid])) {
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--ds-ink-muted);">Ładowanie...</td></tr>';
+      await loadMeds(rid);
+      renderLeki();
+      return;
+    }
+    body.style.display = open ? 'none' : 'block';
+    chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
   });
-  list.querySelectorAll('[data-rm-med]').forEach(b => b.onclick = () => { const rid=parseInt(b.dataset.rid); const mid=b.dataset.rmMed; if (!confirm('Usunąć ten lek?')) return; state.meds[rid]=(state.meds[rid]||[]).filter(m=>m.id!==mid); saveState(); renderLeki(); });
+  list.querySelectorAll('[data-add-med]').forEach(b => b.onclick = () => addMed(b.dataset.addMed));
+  list.querySelectorAll('input[data-med-field]').forEach(inp => {
+    inp.onblur = () => saveMedField(inp.dataset.mid, inp.dataset.rid, inp.dataset.medField, inp.value);
+  });
+  list.querySelectorAll('[data-rm-med]').forEach(b => b.onclick = () => deleteMed(b.dataset.rmMed, b.dataset.rid));
 }
 function renderMedRow(rid, m) {
   const info = medInfo(m);
