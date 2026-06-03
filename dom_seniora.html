@@ -615,8 +615,14 @@ input, select, textarea { font-family: inherit; }
 </div></div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
+
+// ==================== SUPABASE ====================
+const SUPABASE_URL = 'https://asxycepmcggorwlxohop.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzeHljZXBtY2dnb3J3bHhvaG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MjcwMzEsImV4cCI6MjA5NDQwMzAzMX0.EWSPGeZaOP0YpDhRpZlJ87I1rrGBPidpVN3c_l0YqZY';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==================== STORAGE & STATE ====================
 const STORAGE_KEY = 'dom_seniora_full_v1';
@@ -750,9 +756,36 @@ function showModal(id) { document.getElementById(id).classList.add('show'); }
 function hideModal(id) { document.getElementById(id).classList.remove('show'); }
 
 
-// ==================== MIESZKANCY ====================
+// ==================== MIESZKANCY (SUPABASE) ====================
 let mzFilter = 'active';
 let editingResidentId = null;
+
+async function loadResidents() {
+  const { data, error } = await supabase
+    .from('mieszkancy')
+    .select('*')
+    .order('nazwisko', { ascending: true });
+  if (error) { console.error('Błąd ładowania mieszkańców:', error); return; }
+  // Mapowanie z Supabase na format lokalny
+  state.residents = (data||[]).map(r => ({
+    id: r.id,
+    firstName: r.imie,
+    lastName: r.nazwisko,
+    pesel: r.pesel||'',
+    birthDate: r.data_urodzenia||'',
+    gender: r.plec||'K',
+    room: r.pokoj||'',
+    admitDate: r.data_przyjecia||'',
+    status: r.status||'active',
+    autonomy: r.samodzielnosc||'partial',
+    disability: r.orzeczenie||'',
+    address: r.adres||'',
+    notes: r.uwagi||''
+  }));
+  renderMieszkancy();
+  fillResidentSelect();
+}
+
 function renderMieszkancy() {
   const q = (document.getElementById('search-mz').value||'').toLowerCase();
   const list = document.getElementById('mz-list');
@@ -772,8 +805,9 @@ function renderMieszkancy() {
     const aut = ({full:'samodzielny',partial:'częściowo',bed:'leżący'})[r.autonomy]||'';
     return `<div class="resident-card" data-edit-mz="${r.id}"><div class="resident-card-row"><div class="avatar">${escapeHtml(initials(r))}</div><div class="resident-card-main"><p class="resident-card-name">${escapeHtml(fullName(r))}</p><p class="resident-card-meta">Pokój ${escapeHtml(r.room||'—')}${age?'<span class="dot">•</span>'+age:''}${aut?'<span class="dot">•</span>'+aut:''}</p></div>${statusBadge(r.status)}</div></div>`;
   }).join('');
-  list.querySelectorAll('[data-edit-mz]').forEach(el => el.onclick = () => openEditResident(parseInt(el.dataset.editMz)));
+  list.querySelectorAll('[data-edit-mz]').forEach(el => el.onclick = () => openEditResident(el.dataset.editMz));
 }
+
 function openNewResident() {
   editingResidentId = null;
   document.getElementById('mz-modal-title').textContent = 'Nowy mieszkaniec';
@@ -787,6 +821,7 @@ function openNewResident() {
   document.getElementById('mz-err').textContent='';
   showModal('modal-resident');
 }
+
 function openEditResident(id) {
   editingResidentId = id;
   const r = state.residents.find(x => x.id===id); if (!r) return;
@@ -807,26 +842,65 @@ function openEditResident(id) {
   document.getElementById('mz-err').textContent='';
   showModal('modal-resident');
 }
-function saveResident() {
+
+async function saveResident() {
   const first = document.getElementById('mz-first').value.trim();
   const last = document.getElementById('mz-last').value.trim();
   if (!first||!last) { document.getElementById('mz-err').textContent='Imię i nazwisko są wymagane.'; return; }
   const pesel = document.getElementById('mz-pesel').value.trim();
   if (pesel && !/^\d{11}$/.test(pesel)) { document.getElementById('mz-err').textContent='PESEL musi mieć 11 cyfr.'; return; }
-  const data = { firstName:first, lastName:last, pesel, birthDate:document.getElementById('mz-bdate').value, gender:document.getElementById('mz-gender').value, room:document.getElementById('mz-room').value.trim(), admitDate:document.getElementById('mz-admit').value, status:document.getElementById('mz-status').value, autonomy:document.getElementById('mz-autonomy').value, disability:document.getElementById('mz-disability').value, address:document.getElementById('mz-address').value.trim(), notes:document.getElementById('mz-notes').value.trim() };
-  if (editingResidentId) Object.assign(state.residents.find(x=>x.id===editingResidentId), data);
-  else { const newId = Math.max(0,...state.residents.map(r=>r.id))+1; state.residents.push({id:newId,...data}); state.meds[newId]=[]; ensureFixedMag(newId); }
-  saveState(); hideModal('modal-resident'); renderMieszkancy(); fillResidentSelect();
+
+  const saveBtn = document.getElementById('mz-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Zapisuję...';
+
+  const dbData = {
+    imie: first,
+    nazwisko: last,
+    pesel: pesel||null,
+    data_urodzenia: document.getElementById('mz-bdate').value||null,
+    plec: document.getElementById('mz-gender').value,
+    pokoj: document.getElementById('mz-room').value.trim()||null,
+    data_przyjecia: document.getElementById('mz-admit').value||null,
+    status: document.getElementById('mz-status').value,
+    samodzielnosc: document.getElementById('mz-autonomy').value,
+    orzeczenie: document.getElementById('mz-disability').value||null,
+    adres: document.getElementById('mz-address').value.trim()||null,
+    uwagi: document.getElementById('mz-notes').value.trim()||null
+  };
+
+  let error;
+  if (editingResidentId) {
+    ({ error } = await supabase.from('mieszkancy').update(dbData).eq('id', editingResidentId));
+  } else {
+    ({ error } = await supabase.from('mieszkancy').insert(dbData));
+  }
+
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Zapisz';
+
+  if (error) { document.getElementById('mz-err').textContent = 'Błąd zapisu: '+error.message; return; }
+  hideModal('modal-resident');
+  await loadResidents();
 }
-function deleteResident() {
+
+async function deleteResident() {
   if (!editingResidentId) return;
   const r = state.residents.find(x=>x.id===editingResidentId); if (!r) return;
-  if (!confirm('Usunąć: '+fullName(r)+'?\n\nUsunie też leki, magazyn i wpisy controllingu.')) return;
-  state.residents = state.residents.filter(x=>x.id!==editingResidentId);
-  delete state.meds[editingResidentId]; delete state.magazyn[editingResidentId]; delete state.dokumenty[editingResidentId];
+  if (!confirm('Usunąć: '+fullName(r)+'?\n\nUsunie też powiązane dane.')) return;
+
+  const { error } = await supabase.from('mieszkancy').delete().eq('id', editingResidentId);
+  if (error) { alert('Błąd usuwania: '+error.message); return; }
+
+  // Usuń z lokalnego state też leki/magazyn
+  delete state.meds[editingResidentId];
+  delete state.magazyn[editingResidentId];
+  delete state.dokumenty[editingResidentId];
   state.ctrl = state.ctrl.filter(c=>c.residentId!==editingResidentId);
   state.events = state.events.filter(e=>e.residentId!==editingResidentId);
-  saveState(); hideModal('modal-resident'); renderMieszkancy(); fillResidentSelect();
+  saveState();
+  hideModal('modal-resident');
+  await loadResidents();
 }
 
 // ==================== DOKUMENTACJA ====================
@@ -1497,11 +1571,11 @@ function bindAll() {
       state.dismissed = {};
       state.dismissedAlarm = {};
       saveState();
-      fillResidentSelect();
-      renderMieszkancy();
-      // Pokaż alarm popup
-      renderAlarmPopup();
-      setTimeout(() => showModal('alarm-popup'), 300);
+      // Ładuj mieszkańców z Supabase
+      loadResidents().then(() => {
+        renderAlarmPopup();
+        setTimeout(() => showModal('alarm-popup'), 300);
+      });
     } else {
       loginErr.textContent = 'Nieprawidłowe hasło.';
       pwdInput.value = '';
