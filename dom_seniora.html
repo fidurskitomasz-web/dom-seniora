@@ -622,7 +622,7 @@ input, select, textarea { font-family: inherit; }
 // ==================== SUPABASE ====================
 const SUPABASE_URL = 'https://asxycepmcggorwlxohop.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzeHljZXBtY2dnb3J3bHhvaG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MjcwMzEsImV4cCI6MjA5NDQwMzAzMX0.EWSPGeZaOP0YpDhRpZlJ87I1rrGBPidpVN3c_l0YqZY';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==================== STORAGE & STATE ====================
 const STORAGE_KEY = 'dom_seniora_full_v1';
@@ -761,7 +761,7 @@ let mzFilter = 'active';
 let editingResidentId = null;
 
 async function loadResidents() {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('mieszkancy')
     .select('*')
     .order('nazwisko', { ascending: true });
@@ -871,9 +871,9 @@ async function saveResident() {
 
   let error;
   if (editingResidentId) {
-    ({ error } = await supabase.from('mieszkancy').update(dbData).eq('id', editingResidentId));
+    ({ error } = await db.from('mieszkancy').update(dbData).eq('id', editingResidentId));
   } else {
-    ({ error } = await supabase.from('mieszkancy').insert(dbData));
+    ({ error } = await db.from('mieszkancy').insert(dbData));
   }
 
   saveBtn.disabled = false;
@@ -889,7 +889,7 @@ async function deleteResident() {
   const r = state.residents.find(x=>x.id===editingResidentId); if (!r) return;
   if (!confirm('Usunąć: '+fullName(r)+'?\n\nUsunie też powiązane dane.')) return;
 
-  const { error } = await supabase.from('mieszkancy').delete().eq('id', editingResidentId);
+  const { error } = await db.from('mieszkancy').delete().eq('id', editingResidentId);
   if (error) { alert('Błąd usuwania: '+error.message); return; }
 
   // Usuń z lokalnego state też leki/magazyn
