@@ -1039,9 +1039,28 @@ function renderMagRow(rid, item) {
   return `<tr><td>${nameCell}</td><td><input type="text" data-mag-field="dailyUsage" data-rid="${rid}" data-iid="${item.id}" value="${escapeHtml(item.dailyUsage)}" placeholder="0" style="text-align:right;" /></td><td><input type="text" class="stock-edit ${stockClass}" data-mag-field="stockToday" data-rid="${rid}" data-iid="${item.id}" value="${display===''?'':(typeof display==='number'?display.toLocaleString('pl-PL',{maximumFractionDigits:1}):display)}" placeholder="—" />${meta}</td><td class="cell-calc">${info.daysLeft!=null?(info.daysLeft>0?info.daysLeft+' dni':'BRAK'):'—'}</td><td class="cell-date ${lvl}">${endText}</td><td>${item.isFixed?`<button class="rm-btn disabled" title="Stała pozycja"><i class="ti ti-lock" style="font-size:11px;" aria-hidden="true"></i></button>`:`<button class="rm-btn" data-rm-mag="${item.id}" data-rid="${rid}"><i class="ti ti-x" style="font-size:13px;" aria-hidden="true"></i></button>`}</td></tr>`;
 }
 
-// ==================== KALENDARZ ====================
+// ==================== KALENDARZ (SUPABASE) ====================
 let calFilter = 'upcoming';
 let editingEventId = null;
+
+async function loadEvents() {
+  const { data, error } = await db
+    .from('kalendarz')
+    .select('*')
+    .order('data', { ascending: true });
+  if (error) { console.error('Błąd ładowania kalendarza:', error); return; }
+  state.events = (data||[]).map(e => ({
+    id: e.id,
+    title: e.tytul,
+    type: e.typ||'inne',
+    residentId: e.mieszkaniec_id||null,
+    date: e.data,
+    time: e.godzina ? e.godzina.slice(0,5) : '',
+    notes: e.notatki||''
+  }));
+  renderEvents();
+}
+
 function typeLabel(t) { return ({kardiolog:'Kardiolog',nefrolog:'Nefrolog',urolog:'Urolog',neurolog:'Neurolog',geriatra:'Geriatra',lekarz:'Lekarz rodzinny',fizjo:'Fizjoterapia',badanie:'Badanie',transport:'Transport medyczny',kontrola:'Kontrola',urodziny:'Urodziny',rodzina:'Wizyta rodziny',przeglad:'Przegląd techniczny',inne:'Inne'})[t]||t; }
 function typeIcon(t) { const m = {kardiolog:{i:'heartbeat',cls:'medical'},nefrolog:{i:'droplet-half',cls:'medical'},urolog:{i:'stethoscope',cls:'medical'},neurolog:{i:'brain',cls:'medical'},geriatra:{i:'stethoscope',cls:'medical'},lekarz:{i:'stethoscope',cls:'medical'},fizjo:{i:'yoga',cls:'medical'},badanie:{i:'microscope',cls:'medical'},transport:{i:'ambulance',cls:'transport'},kontrola:{i:'clipboard-check',cls:'control'},urodziny:{i:'cake',cls:'birthday'},rodzina:{i:'users',cls:''},przeglad:{i:'tools',cls:'control'},inne:{i:'calendar',cls:''}}; return m[t]||{i:'calendar',cls:''}; }
 function fillResidentSelect() {
@@ -1106,21 +1125,48 @@ function openEditEvent(id) {
   document.getElementById('e-err').textContent='';
   showModal('modal-event');
 }
-function saveEvent() {
-  const title=document.getElementById('e-title').value.trim();
-  const date=document.getElementById('e-date').value;
+async function saveEvent() {
+  const title = document.getElementById('e-title').value.trim();
+  const date = document.getElementById('e-date').value;
   if (!title) { document.getElementById('e-err').textContent='Podaj tytuł.'; return; }
   if (!date) { document.getElementById('e-err').textContent='Wybierz datę.'; return; }
-  const data = {title,type:document.getElementById('e-type').value,residentId:parseInt(document.getElementById('e-resident').value)||null,date,time:document.getElementById('e-time').value,notes:document.getElementById('e-notes').value.trim()};
-  if (editingEventId) Object.assign(state.events.find(x=>x.id===editingEventId), data);
-  else state.events.push({id:uid(),...data});
-  saveState(); hideModal('modal-event'); renderEvents();
+
+  const saveBtn = document.getElementById('e-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Zapisuję...';
+
+  const residentVal = document.getElementById('e-resident').value;
+  const dbData = {
+    tytul: title,
+    typ: document.getElementById('e-type').value,
+    mieszkaniec_id: residentVal||null,
+    data: date,
+    godzina: document.getElementById('e-time').value||null,
+    notatki: document.getElementById('e-notes').value.trim()||null
+  };
+
+  let error;
+  if (editingEventId) {
+    ({ error } = await db.from('kalendarz').update(dbData).eq('id', editingEventId));
+  } else {
+    ({ error } = await db.from('kalendarz').insert(dbData));
+  }
+
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Zapisz';
+
+  if (error) { document.getElementById('e-err').textContent = 'Błąd zapisu: '+error.message; return; }
+  hideModal('modal-event');
+  await loadEvents();
 }
-function deleteEvent() {
+
+async function deleteEvent() {
   if (!editingEventId) return;
   if (!confirm('Usunąć wydarzenie?')) return;
-  state.events = state.events.filter(x=>x.id!==editingEventId);
-  saveState(); hideModal('modal-event'); renderEvents();
+  const { error } = await db.from('kalendarz').delete().eq('id', editingEventId);
+  if (error) { alert('Błąd usuwania: '+error.message); return; }
+  hideModal('modal-event');
+  await loadEvents();
 }
 
 
@@ -1571,8 +1617,8 @@ function bindAll() {
       state.dismissed = {};
       state.dismissedAlarm = {};
       saveState();
-      // Ładuj mieszkańców z Supabase
-      loadResidents().then(() => {
+      // Ładuj dane z Supabase
+      Promise.all([loadResidents(), loadEvents()]).then(() => {
         renderAlarmPopup();
         setTimeout(() => showModal('alarm-popup'), 300);
       });
