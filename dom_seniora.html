@@ -1580,7 +1580,10 @@ function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.style.display = (p.id === 'tab-' + name) ? 'block' : 'none');
   if (name === 'mieszkancy') renderMieszkancy();
   else if (name === 'dokumentacja') renderDokumentacja();
-  else if (name === 'leki') renderLeki();
+  else if (name === 'leki') {
+    const activeResidents = state.residents.filter(r => r.status === 'active');
+    Promise.all(activeResidents.map(r => Array.isArray(state.meds[r.id]) ? Promise.resolve() : loadMeds(r.id))).then(() => renderLeki());
+  }
   else if (name === 'magazyn') renderMag();
   else if (name === 'kalendarz') renderEvents();
   else if (name === 'controlling') renderControlling();
