@@ -673,7 +673,7 @@ function ensureStateShape() {
   if (!state.dokumenty) state.dokumenty = {};
   if (!state.dismissed) state.dismissed = {};
   if (!state.dismissedAlarm) state.dismissedAlarm = {};
-  state.residents.forEach(r => { if (!state.meds[r.id]) state.meds[r.id] = []; ensureFixedMag(r.id); });
+  // ensureFixedMag usunięte - magazyn ładuje się z Supabase
 }
 function ensureFixedMag(rid) {
   if (!state.magazyn[rid]) state.magazyn[rid] = [];
