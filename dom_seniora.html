@@ -1688,6 +1688,9 @@ function bindAll() {
       state.dismissed = {};
       state.dismissedAlarm = {};
       saveState();
+      // Wyczyść stare dane leków z localStorage
+      state.meds = {};
+      saveState();
       // Ładuj dane z Supabase
       Promise.all([loadResidents(), loadEvents()]).then(() => {
         renderAlarmPopup();
@@ -1709,5 +1712,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-  
 </html>
