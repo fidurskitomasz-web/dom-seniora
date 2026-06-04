@@ -1095,11 +1095,16 @@ async function loadMagazyn(residentId) {
 }
 
 async function saveMagField(itemId, residentId, field, value) {
-  const dbField = {dailyUsage:'zuzycie_dzienne', baselineStock:'stan_bazowy', name:'nazwa'}[field];
+  // HTML używa 'stockToday' dla stanu, mapujemy na właściwe nazwy
+  const fieldMap = {dailyUsage:'zuzycie_dzienne', baselineStock:'stan_bazowy', stockToday:'stan_bazowy', name:'nazwa'};
+  const dbField = fieldMap[field];
   if (!dbField) return;
-  const dbValue = (field==='dailyUsage'||field==='baselineStock') ? (value===''?null:parseFloat(value)||0) : (value||null);
+  const isStock = field==='baselineStock' || field==='stockToday';
+  const dbValue = (field==='dailyUsage'||isStock) ? (value===''?null:parseFloat(value)||0) : (value||null);
   const update = { [dbField]: dbValue };
-  if (field==='baselineStock') update.data_bazowa = todayISO();
+  if (isStock) update.data_bazowa = todayISO();
+  // Normalizuj pole do baselineStock dla lokalnego state
+  if (field==='stockToday') field = 'baselineStock';
   const { error } = await db.from('magazyn').update(update).eq('id', itemId);
   if (error) { console.error('Błąd zapisu magazynu:', error); return; }
   const item = (state.magazyn[residentId]||[]).find(x=>x.id===itemId);
