@@ -1049,14 +1049,96 @@ function renderMedRow(rid, m) {
 }
 
 
-// ==================== MAGAZYN ====================
+// ==================== MAGAZYN (SUPABASE) ====================
+
+const MAG_FIXED = ['Pieluchomajtki','Podkłady chłonne','Pianka do mycia'];
+
+async function loadMagazyn(residentId) {
+  const { data, error } = await db
+    .from('magazyn')
+    .select('*')
+    .eq('mieszkaniec_id', residentId)
+    .order('created_at', { ascending: true });
+  if (error) { console.error('Błąd ładowania magazynu:', error); return []; }
+
+  let items = (data||[]).map(m => ({
+    id: m.id,
+    key: m.key||'custom',
+    name: m.nazwa||'',
+    isFixed: m.is_fixed||false,
+    baselineStock: m.stan_bazowy!=null ? m.stan_bazowy : '',
+    baselineDate: m.data_bazowa||'',
+    dailyUsage: m.zuzycie_dzienne!=null ? m.zuzycie_dzienne : ''
+  }));
+
+  // Jeśli brak stałych pozycji — dodaj je automatycznie
+  const fixedNames = items.filter(i=>i.isFixed).map(i=>i.name);
+  const missing = MAG_FIXED.filter(n => !fixedNames.includes(n));
+  if (missing.length > 0) {
+    const inserts = missing.map(n => ({
+      mieszkaniec_id: residentId,
+      nazwa: n,
+      key: n.toLowerCase().replace(/ /g,'_'),
+      is_fixed: true
+    }));
+    const { data: newItems, error: e2 } = await db.from('magazyn').insert(inserts).select();
+    if (!e2 && newItems) {
+      items = items.concat(newItems.map(m => ({
+        id: m.id, key: m.key||'custom', name: m.nazwa||'',
+        isFixed: true, baselineStock: '', baselineDate: '', dailyUsage: ''
+      })));
+    }
+  }
+
+  state.magazyn[residentId] = items;
+  return items;
+}
+
+async function saveMagField(itemId, residentId, field, value) {
+  const dbField = {dailyUsage:'zuzycie_dzienne', baselineStock:'stan_bazowy', name:'nazwa'}[field];
+  if (!dbField) return;
+  const dbValue = (field==='dailyUsage'||field==='baselineStock') ? (value===''?null:parseFloat(value)||0) : (value||null);
+  const update = { [dbField]: dbValue };
+  if (field==='baselineStock') update.data_bazowa = todayISO();
+  const { error } = await db.from('magazyn').update(update).eq('id', itemId);
+  if (error) { console.error('Błąd zapisu magazynu:', error); return; }
+  const item = (state.magazyn[residentId]||[]).find(x=>x.id===itemId);
+  if (item) {
+    if (field==='baselineStock') { item.baselineStock=value; item.baselineDate=todayISO(); }
+    else item[field]=value;
+  }
+  renderMag();
+}
+
+async function addMagItem(residentId) {
+  const { data, error } = await db.from('magazyn')
+    .insert({ mieszkaniec_id: residentId, nazwa: '', key: 'custom', is_fixed: false })
+    .select().single();
+  if (error) { console.error('Błąd dodawania:', error); return; }
+  if (!state.magazyn[residentId]) state.magazyn[residentId] = [];
+  state.magazyn[residentId].push({
+    id: data.id, key: 'custom', name: '', isFixed: false,
+    baselineStock: '', baselineDate: '', dailyUsage: ''
+  });
+  renderMag();
+}
+
+async function deleteMagItem(itemId, residentId) {
+  const item = (state.magazyn[residentId]||[]).find(x=>x.id===itemId);
+  if (!item || item.isFixed) return;
+  if (!confirm('Usunąć: '+(item.name||'(bez nazwy)')+'?')) return;
+  const { error } = await db.from('magazyn').delete().eq('id', itemId);
+  if (error) { alert('Błąd usuwania: '+error.message); return; }
+  state.magazyn[residentId] = state.magazyn[residentId].filter(x=>x.id!==itemId);
+  renderMag();
+}
+
 function renderMag() {
   const q = (document.getElementById('search-mag').value||'').toLowerCase();
   const list = document.getElementById('mag-list');
   const filtered = state.residents.filter(r => r.status==='active' && fullName(r).toLowerCase().includes(q)).sort((a,b)=>fullNameLF(a).localeCompare(fullNameLF(b),'pl'));
   let totalProducts=0,totalRed=0,totalAmber=0;
   state.residents.filter(r=>r.status==='active').forEach(r => {
-    ensureFixedMag(r.id);
     (state.magazyn[r.id]||[]).forEach(it => { const info=magInfo(it); const lvl=alertLevel(info.daysLeft,info.currentToday); totalProducts++; if (lvl==='red') totalRed++; else if (lvl==='amber') totalAmber++; });
   });
   document.getElementById('mag-residents').textContent = filtered.length;
@@ -1065,7 +1147,6 @@ function renderMag() {
   document.getElementById('mag-amber').textContent = totalAmber;
   if (!filtered.length) { list.innerHTML='<div class="empty"><i class="ti ti-package-off" aria-hidden="true"></i><p>Brak mieszkańców.</p></div>'; return; }
   list.innerHTML = filtered.map(r => {
-    ensureFixedMag(r.id);
     const items = state.magazyn[r.id]||[];
     let red=0,amber=0;
     items.forEach(it => { const i=magInfo(it); const lvl=alertLevel(i.daysLeft,i.currentToday); if (lvl==='red') red++; else if (lvl==='amber') amber++; });
@@ -1073,23 +1154,25 @@ function renderMag() {
     let alertHtml = fresh ? `<span class="resident-head-alert alert-fresh"><i class="ti ti-check" style="font-size:11px;" aria-hidden="true"></i>Wpisano z faktury</span>` : red ? `<span class="resident-head-alert alert-red"><i class="ti ti-alert-triangle" style="font-size:11px;" aria-hidden="true"></i>${red} ${red===1?'produkt się kończy':'produkty się kończą'}</span>` : amber ? `<span class="resident-head-alert alert-amber"><i class="ti ti-clock" style="font-size:11px;" aria-hidden="true"></i>${amber} do uzupełnienia</span>` : `<span class="resident-head-alert alert-green"><i class="ti ti-check" style="font-size:11px;" aria-hidden="true"></i>Stan OK</span>`;
     return `<div class="resident-block"><div class="resident-head" data-toggle-mag="${r.id}"><div class="avatar-sm">${escapeHtml(initials(r))}</div><div class="resident-head-main"><p class="resident-head-name">${escapeHtml(fullName(r))}</p><p class="resident-head-meta">Pokój ${escapeHtml(r.room||'—')} • ${items.length} ${items.length===1?'pozycja':items.length<5?'pozycje':'pozycji'}</p></div>${alertHtml}<i class="ti ti-chevron-down chev" data-chev-mag="${r.id}" style="font-size:18px; transform:rotate(180deg);" aria-hidden="true"></i></div><div class="tab-wrap" data-body-mag="${r.id}"><table class="tab-tbl"><thead><tr><th style="min-width:180px;">Produkt</th><th style="width:120px; text-align:right;">Zużycie/dzień</th><th style="width:170px;">Stan (dziś)</th><th style="width:100px; text-align:right;">Starczy</th><th style="width:130px;">Koniec</th><th style="width:36px;"></th></tr></thead><tbody>${items.map(it=>renderMagRow(r.id,it)).join('')}</tbody></table><div class="tab-add-row"><button class="btn-ghost" data-add-mag="${r.id}"><i class="ti ti-plus" style="font-size:13px;" aria-hidden="true"></i>Dodaj inny produkt</button></div></div></div>`;
   }).join('');
-  list.querySelectorAll('[data-toggle-mag]').forEach(el => el.onclick = (e) => { if (e.target.closest('input,button')) return; const rid=el.dataset.toggleMag; const body=list.querySelector(`[data-body-mag="${rid}"]`); const chev=list.querySelector(`[data-chev-mag="${rid}"]`); const open=body.style.display!=='none'; body.style.display=open?'none':'block'; chev.style.transform=open?'rotate(0deg)':'rotate(180deg)'; });
-  list.querySelectorAll('[data-add-mag]').forEach(b => b.onclick = () => { const rid=parseInt(b.dataset.addMag); state.magazyn[rid]=state.magazyn[rid]||[]; state.magazyn[rid].push({id:uid(),key:'custom',name:'',isFixed:false,baselineStock:'',baselineDate:'',dailyUsage:''}); saveState(); renderMag(); });
+  list.querySelectorAll('[data-toggle-mag]').forEach(el => el.onclick = async (e) => {
+    if (e.target.closest('input,button')) return;
+    const rid = el.dataset.toggleMag;
+    const body = list.querySelector(`[data-body-mag="${rid}"]`);
+    const chev = list.querySelector(`[data-chev-mag="${rid}"]`);
+    const open = body.style.display !== 'none';
+    if (!open && !Array.isArray(state.magazyn[rid])) {
+      await loadMagazyn(rid);
+      renderMag();
+      return;
+    }
+    body.style.display = open ? 'none' : 'block';
+    chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+  });
+  list.querySelectorAll('[data-add-mag]').forEach(b => b.onclick = () => addMagItem(b.dataset.addMag));
   list.querySelectorAll('input[data-mag-field]').forEach(inp => {
-    inp.oninput = () => {
-      const rid=parseInt(inp.dataset.rid); const iid=inp.dataset.iid; const field=inp.dataset.magField;
-      const item=state.magazyn[rid].find(x=>x.id===iid); if (!item) return;
-      if (field==='stockToday') { item.baselineStock=inp.value; item.baselineDate=todayISO(); }
-      else item[field]=inp.value;
-    };
-    inp.onblur = () => { saveState(); renderMag(); };
+    inp.onblur = () => saveMagField(inp.dataset.iid, inp.dataset.rid, inp.dataset.magField, inp.value);
   });
-  list.querySelectorAll('[data-rm-mag]').forEach(b => b.onclick = () => {
-    const rid=parseInt(b.dataset.rid); const iid=b.dataset.rmMag;
-    const item=state.magazyn[rid].find(x=>x.id===iid); if (!item||item.isFixed) return;
-    if (!confirm('Usunąć: '+(item.name||'(bez nazwy)')+'?')) return;
-    state.magazyn[rid]=state.magazyn[rid].filter(x=>x.id!==iid); saveState(); renderMag();
-  });
+  list.querySelectorAll('[data-rm-mag]').forEach(b => b.onclick = () => deleteMagItem(b.dataset.rmMag, b.dataset.rid));
 }
 function renderMagRow(rid, item) {
   const info = magInfo(item);
@@ -1584,7 +1667,10 @@ function switchTab(name) {
     const activeResidents = state.residents.filter(r => r.status === 'active');
     Promise.all(activeResidents.map(r => Array.isArray(state.meds[r.id]) ? Promise.resolve() : loadMeds(r.id))).then(() => renderLeki());
   }
-  else if (name === 'magazyn') renderMag();
+  else if (name === 'magazyn') {
+    const activeR = state.residents.filter(r => r.status === 'active');
+    Promise.all(activeR.map(r => Array.isArray(state.magazyn[r.id]) ? Promise.resolve() : loadMagazyn(r.id))).then(() => renderMag());
+  }
   else if (name === 'kalendarz') renderEvents();
   else if (name === 'controlling') renderControlling();
   else if (name === 'grafiki') renderGrafiki();
@@ -1688,8 +1774,9 @@ function bindAll() {
       state.dismissed = {};
       state.dismissedAlarm = {};
       saveState();
-      // Wyczyść stare dane leków z localStorage
+      // Wyczyść stare dane z localStorage
       state.meds = {};
+      state.magazyn = {};
       saveState();
       // Ładuj dane z Supabase
       Promise.all([loadResidents(), loadEvents()]).then(() => {
